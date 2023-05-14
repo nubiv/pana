@@ -4,9 +4,9 @@ This is a desktop application that allows users to ask questions to their docume
 
 # Roadmap
 
-- [ ] Chatbot functionality for assistance and support
-- [ ] Search functionality to quickly locate information within the document
-- [ ] Summarization of lengthy documents for easy understanding
+- [ ] Chatbot functionality for assistance and support (WIP)
+- [ ] Search functionality to quickly locate information within the document (WIP)
+- [ ] Summarization of lengthy documents for easy understanding (WIP)
 
 ## Technologies Used
 
@@ -14,7 +14,7 @@ This is a desktop application that allows users to ask questions to their docume
 - Svelte
 <!-- - Tailwind CSS -->
 
-## Installation
+## Development
 
 To install the app, please follow these steps:
 
