@@ -2,12 +2,6 @@
 
 This is a desktop application that allows users to ask questions to their documents without requiring an internet connection, using the power of LLMs. The app ensures complete privacy as no data leaves the user's execution environment at any point.
 
-# Roadmap
-
-- [ ] Chatbot functionality for assistance and support (WIP)
-- [ ] Search functionality to quickly locate information within the document (WIP)
-- [ ] Summarization of lengthy documents for easy understanding (WIP)
-
 ## Technologies Used
 
 - Tauri
@@ -25,6 +19,18 @@ To install the app, please follow these steps:
 ## Download
 
 Not yet.
+
+# Roadmap
+
+Offline Mode
+
+- [ ] Chatbot functionality for assistance and support
+- [ ] Search functionality to quickly locate information within the document
+- [ ] Summarization of lengthy documents for easy understanding
+
+Online Mode
+
+- [ ] Interaction with ChatGPT model using your own key
 
 ## Contributing
 
