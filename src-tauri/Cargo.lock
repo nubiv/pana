@@ -1973,6 +1973,7 @@ dependencies = [
 name = "lobot"
 version = "0.0.0"
 dependencies = [
+ "futures",
  "llm-chain",
  "llm-chain-llama",
  "llm-chain-openai",
