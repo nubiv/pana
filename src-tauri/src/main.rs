@@ -76,6 +76,9 @@ fn run_llama(window: tauri::Window, state: tauri::State<Channel>) {
                                     .await
                                     {
                                         Ok(res) => {
+                                            // TODO:
+                                            // setup status code inside input
+                                            // shut down gracefully if status code matches
                                             window
                                                 .emit(
                                                     "incoming_response",
@@ -97,6 +100,8 @@ fn run_llama(window: tauri::Window, state: tauri::State<Channel>) {
                     })
                 });
             });
+
+            // *tx_guard = None;
         }
     }
 }
