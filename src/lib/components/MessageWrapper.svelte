@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts">
 import { Input, Button, InputWrapper, Center } from '@svelteuidev/core'
 import { invoke } from '@tauri-apps/api/tauri'
 
