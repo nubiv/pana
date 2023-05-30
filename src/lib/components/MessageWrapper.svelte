@@ -6,7 +6,10 @@ import { output } from '../store/output'
 let message: string
 
 async function sendMessage() {
-  if (!message) return
+  if (!message) {
+    alert('Message is empty...')
+    return
+  }
   await invoke('send_message', { message: message })
   output.update((prev) => `${prev}\nMe: ${message}`)
 }

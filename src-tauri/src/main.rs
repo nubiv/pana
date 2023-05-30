@@ -35,42 +35,75 @@ async fn main() -> Result<(), Box<dyn Error>> {
 fn run_llama(window: tauri::Window, state: tauri::State<Channel>) {
     let (tx, mut rx) = mpsc::channel(32);
     let tx_guard = &mut *state.tx.lock().unwrap();
-    *tx_guard = Some(tx.clone());
 
-    tauri::async_runtime::spawn(async move {
-        tokio::task::block_in_place(|| {
-            let llm = Arc::new(Mutex::new(LLMCtx::spawn_llama().unwrap()));
+    match tx_guard {
+        Some(_) => {
+            window
+                .emit(
+                    "system_message",
+                    Payload {
+                        message: "Llama has been running already..."
+                            .to_string(),
+                    },
+                )
+                .unwrap();
+        }
+        None => {
+            *tx_guard = Some(tx.clone());
 
-            Handle::current().block_on(async move {
-                loop {
-                    match rx.recv().await {
-                        Some(input) => {
-                            match feed_input(llm.try_lock().unwrap(), input)
-                                .await
-                            {
-                                Ok(res) => {
-                                    window
-                                        .emit(
-                                            "incoming_response",
-                                            Payload {
-                                                message: res.to_string(),
-                                            },
-                                        )
-                                        .unwrap();
+            tauri::async_runtime::spawn(async move {
+                tokio::task::block_in_place(|| {
+                    let llm =
+                        Arc::new(Mutex::new(LLMCtx::spawn_llama().unwrap()));
+
+                    window
+                        .emit(
+                            "system_message",
+                            Payload {
+                                message: "Llama activated...".to_string(),
+                            },
+                        )
+                        .unwrap();
+
+                    Handle::current().block_on(async move {
+                        loop {
+                            match rx.recv().await {
+                                Some(input) => {
+                                    match feed_input(
+                                        llm.try_lock().unwrap(),
+                                        input,
+                                    )
+                                    .await
+                                    {
+                                        Ok(res) => {
+                                            window
+                                                .emit(
+                                                    "incoming_response",
+                                                    Payload {
+                                                        message: res
+                                                            .to_string(),
+                                                    },
+                                                )
+                                                .unwrap();
+                                        }
+                                        Err(e) => {
+                                            println!("run llama block {}", e)
+                                        }
+                                    }
                                 }
-                                Err(e) => println!("run llama block {}", e),
+                                None => println!("the sender dropped"),
                             }
                         }
-                        None => println!("the sender dropped"),
-                    }
-                }
-            })
-        });
-    });
+                    })
+                });
+            });
+        }
+    }
 }
 
 #[tauri::command]
 fn send_message(
+    window: tauri::Window,
     state: tauri::State<Channel>,
     message: String,
 ) -> Result<(), String> {
@@ -84,8 +117,14 @@ fn send_message(
             }
         });
     } else {
-        // println!("something went wrong...")
-        ()
+        window
+            .emit(
+                "system_message",
+                Payload {
+                    message: "Wake Llama up first...".to_string(),
+                },
+            )
+            .unwrap();
     };
 
     Ok(())
