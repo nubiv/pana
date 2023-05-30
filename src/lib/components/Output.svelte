@@ -2,9 +2,7 @@
 import { Container } from '@svelteuidev/core'
 import { listen } from '@tauri-apps/api/event'
 import { onDestroy } from 'svelte'
-import { writable, type Writable } from 'svelte/store'
-
-export const output: Writable<string> = writable('')
+import { output } from '../store/output'
 
 type TPayload = {
   message: string

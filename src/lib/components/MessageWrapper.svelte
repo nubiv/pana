@@ -1,12 +1,14 @@
 <script lang="ts">
 import { Input, Button, InputWrapper, Center } from '@svelteuidev/core'
 import { invoke } from '@tauri-apps/api/tauri'
+import { output } from '../store/output'
 
 let message: string
 
 async function sendMessage() {
   if (!message) return
   await invoke('send_message', { message: message })
+  output.update((prev) => `${prev}\nMe: ${message}`)
 }
 
 async function runLlama() {
