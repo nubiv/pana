@@ -1,5 +1,11 @@
 # Lobot 🤖
 
+[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/Ryc9Cbws)
+![License](https://img.shields.io/github/license/sobelio/llm-chain?style=for-the-badge)
+![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+![macOS](https://img.shields.io/badge/mac%20os-000000?style=for-the-badge&logo=macos&logoColor=F0F0F0)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
+
 This is a desktop application that allows users to ask questions to their documents without requiring an internet connection, using the power of LLMs. The app ensures complete privacy as no data leaves the user's execution environment at any point.
 
 ## Technologies Used
@@ -15,6 +21,8 @@ Before getting started with the Tauri project, ensure that you have the followin
 1. Node.js: Make sure you have Node.js installed. You can download it from the official website: https://nodejs.org.
 
 2. Rust: Tauri is powered by Rust, so you'll need to have Rust installed. You can install Rust by following the instructions on their website: https://www.rust-lang.org.
+
+3. LLM: Place a GGML-targeting `.bin` LLM model (currently only tested with Llama model) in the `llm` folder.
 
 Once you have these prerequisites installed, you're ready to start working with Tauri and building your applications.
 
@@ -32,18 +40,22 @@ To start the development server, run `npm run tauri dev`, or `cargo tauri dev` i
 
 Not yet.
 
-# Roadmap
+## Roadmap
 
 Offline Mode
 
-- [x] Uncontextual conversation with LLM model (currently only tested with Llama model)
+- [x] Uncontextual conversation with LLM model
 - [ ] Contextual conversation with LLM model for assistance and support
 - [ ] Search functionality to quickly locate information within the document
 - [ ] Summarization of lengthy documents for easy understanding
 
 Online Mode (Not sure if this is needed)
 
-- [ ] Interaction with ChatGPT model using your own key
+- [ ] Interaction with ChatGPT or other models using your own key
+
+## Credits
+
+Thanks to the authors of [llm-chain](https://github.com/sobelio/llm-chain) for the Rust bindings over [Llama.cpp](https://github.com/ggerganov/llama.cpp).
 
 ## Contributing
 
@@ -51,4 +63,8 @@ Contributions are always welcome! Please submit a pull request if you'd like to 
 
 ## License
 
-This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
+`Lobot` is licensed under the [MIT License](LICENSE.md).
+
+## Connect
+
+If you have any questions, suggestions, or feedback, feel free to open an issue or join [discord](https://discord.gg/Ryc9Cbws).

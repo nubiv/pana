@@ -23,4 +23,4 @@ dist-ssr
 *.sw?
 
 # llm
-llm
+llm/*.bin
