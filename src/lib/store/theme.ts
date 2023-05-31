@@ -4,13 +4,11 @@ const createThemeStore = () => {
   const { subscribe, set } = writable('light')
 
   const toggleDarkMode = () => {
-    console.log('dark mode')
     set('dark')
     document.documentElement.classList.add('dark')
   }
 
   const toggleLightMode = () => {
-    console.log('light mode')
     set('light')
     document.documentElement.classList.remove('dark')
   }
