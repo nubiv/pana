@@ -6,7 +6,10 @@
 ![macOS](https://img.shields.io/badge/mac%20os-000000?style=for-the-badge&logo=macos&logoColor=F0F0F0)
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 
-This is a desktop application that allows users to ask questions to their documents without requiring an internet connection, using the power of LLMs. The app ensures complete privacy as no data leaves the user's execution environment at any point.
+A locally hosted desktop assistant leveraging LLMs, enabling offline question-answering with complete data privacy.
+
+> **🔔 Note!!!**  
+> This project is currently in its early stages of development.
 
 ## Technologies Used
 
