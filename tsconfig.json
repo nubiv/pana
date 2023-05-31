@@ -14,7 +14,11 @@
     "allowJs": true,
     "checkJs": true,
     "isolatedModules": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "$lib": ["src/lib"],
+      "$lib/*": ["src/lib/*"]
+    }
   },
   "extends": "./.svelte-kit/tsconfig.json"
   // "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],
