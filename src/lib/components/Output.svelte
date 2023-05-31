@@ -1,8 +1,8 @@
 <script lang="ts">
-import { Container } from '@svelteuidev/core'
 import { listen } from '@tauri-apps/api/event'
 import { onDestroy } from 'svelte'
-import { output } from '../store/output'
+import { output } from '$store/output'
+import { AspectRatio } from './ui/aspect-ratio'
 
 type TPayload = {
   message: string
@@ -21,10 +21,6 @@ onDestroy(async () => {
 })
 </script>
 
-<Container
-  override="{{
-    bc: 'AliceBlue',
-    whiteSpace: 'pre-wrap'
-  }}">
+<AspectRatio ratio="{16 / 9}" class="bg-muted flex flex-col-reverse">
   {$output}
-</Container>
+</AspectRatio>

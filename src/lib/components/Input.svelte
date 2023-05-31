@@ -1,8 +1,9 @@
 <script lang="ts">
-import { Input, Button, InputWrapper, Center } from '@svelteuidev/core'
 import { invoke } from '@tauri-apps/api/tauri'
 import { output } from '../store/output'
 import { llmState } from '../store/llm-state'
+import { Input } from '$components/ui/input'
+import { Button } from '$components/ui/button'
 
 let message: string
 
@@ -26,10 +27,9 @@ async function runLlama() {
 }
 </script>
 
-<InputWrapper id="message-input" label="">
-  <Input placeholder="Enter your message here" bind:value="{message}" />
-  <Center>
-    <Button variant="light" on:click="{sendMessage}">Send Message</Button>
-    <Button variant="light" on:click="{runLlama}">Run Llama</Button>
-  </Center>
-</InputWrapper>
+<Input
+  type="message"
+  placeholder="Enter your message..."
+  bind:value="{message}" />
+<Button on:click="{sendMessage}">Send</Button>
+<Button on:click="{runLlama}">Run llama</Button>

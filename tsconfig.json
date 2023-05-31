@@ -18,6 +18,8 @@
     "paths": {
       "$lib": ["src/lib"],
       "$lib/*": ["src/lib/*"],
+      "$store": ["src/lib/store"],
+      "$store/*": ["src/lib/store/*"],
       "$components": ["src/lib/components"],
       "$components/*": ["src/lib/components/*"]
     }

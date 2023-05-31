@@ -1,8 +1,9 @@
 <script lang="ts">
 import { listen } from '@tauri-apps/api/event'
-import Tabs from '$lib/components/Tabs.svelte'
 import { onDestroy } from 'svelte'
 import { llmState } from '$lib/store/llm-state'
+import Input from '$lib/components/Input.svelte'
+import Output from '$lib/components/Output.svelte'
 
 type TPayload = {
   message: string
@@ -26,6 +27,7 @@ onDestroy(async () => {
 </script>
 
 <main class="container">
-  <h1 class="text-xl p-3">Lobot. &#129302;</h1>
-  <Tabs />
+  <h1 class=" text-center text-xl p-3">Lobot. &#129302;</h1>
+  <Output />
+  <Input />
 </main>

@@ -19,16 +19,12 @@ struct Channel {
     pub tx: Mutex<Option<Sender<String>>>,
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+fn main() {
     tauri::Builder::default()
         .manage(Channel::default())
         .invoke_handler(generate_handler![run_llama, send_message])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-
-    // run_llama().await?;
-    Ok(())
 }
 
 #[tauri::command]
@@ -56,6 +52,7 @@ fn run_llama(window: tauri::Window, state: tauri::State<Channel>) {
                     let llm =
                         Arc::new(Mutex::new(LLMCtx::spawn_llama().unwrap()));
 
+                    println!("testing....");
                     window
                         .emit(
                             "system_message",
