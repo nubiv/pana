@@ -24,3 +24,5 @@ dist-ssr
 
 # llm
 llm/*.bin
+
+.svelte-kit

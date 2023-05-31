@@ -1,13 +1,15 @@
+root: true
 parser: '@typescript-eslint/parser'
 extends:
   [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:@typescript-eslint/recommended-requiring-type-checking',
-    'plugin:svelte/recommended'
+    'plugin:svelte/recommended',
+    'prettier'
   ]
 env: { es6: true, browser: true }
-parserOptions: { project: './tsconfig.json', extraFileExtensions: ['.svelte'] }
+parserOptions:
+  { sourceType: 'module', ecmaVersion: 2020, extraFileExtensions: ['.svelte'] }
 overrides:
   [
     {

@@ -53,6 +53,7 @@ declare module '$env/static/private' {
 	export const PATH: string;
 	export const WARP_PS1: string;
 	export const _: string;
+	export const npm_config_engine_strict: string;
 	export const npm_package_json: string;
 	export const __CFBundleIdentifier: string;
 	export const npm_config_init_module: string;
@@ -63,6 +64,7 @@ declare module '$env/static/private' {
 	export const npm_lifecycle_event: string;
 	export const LANG: string;
 	export const npm_package_name: string;
+	export const npm_config_resolution_mode: string;
 	export const XPC_FLAGS: string;
 	export const TAURI_PLATFORM: string;
 	export const npm_config_node_gyp: string;
@@ -144,6 +146,7 @@ declare module '$env/dynamic/private' {
 		PATH: string;
 		WARP_PS1: string;
 		_: string;
+		npm_config_engine_strict: string;
 		npm_package_json: string;
 		__CFBundleIdentifier: string;
 		npm_config_init_module: string;
@@ -154,6 +157,7 @@ declare module '$env/dynamic/private' {
 		npm_lifecycle_event: string;
 		LANG: string;
 		npm_package_name: string;
+		npm_config_resolution_mode: string;
 		XPC_FLAGS: string;
 		TAURI_PLATFORM: string;
 		npm_config_node_gyp: string;

@@ -8,6 +8,3 @@ dist
 pnpm-lock.yaml
 package-lock.json
 yarn.lock
-
-# Ignore files for configs
-*.config.*
