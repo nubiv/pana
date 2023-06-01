@@ -12,7 +12,9 @@ pub enum LLMError {
 impl fmt::Display for LLMError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            LLMError::IsProcessing => write!(f, "LLM is processing, wait a sec."),
+            LLMError::IsProcessing => {
+                write!(f, "LLM is processing, wait a sec.")
+            }
             LLMError::InitingLLMFailed => {
                 write!(f, "Initing LLM failed.")
             }

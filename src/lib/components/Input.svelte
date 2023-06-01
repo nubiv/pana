@@ -25,6 +25,10 @@ async function sendMessage() {
 async function runLlama() {
   await invoke('run_llama')
 }
+
+async function stopLlama() {
+  await invoke('stop_llama')
+}
 </script>
 
 <Input
@@ -33,3 +37,4 @@ async function runLlama() {
   bind:value="{message}" />
 <Button on:click="{sendMessage}">Send</Button>
 <Button on:click="{runLlama}">Run llama</Button>
+<Button on:click="{stopLlama}">Stop llama</Button>

@@ -16,11 +16,12 @@ tauri-build = { version = "1.2", features = [] }
 tauri = { version = "1.2", features = ["dialog-all"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-llm-chain-llama = "0.8.2"
+llm-chain-local = '0.9.1'
+llm-chain-llama = "0.9.3"
 llm-chain-openai = "0.8.2"
-llm-chain = "0.8.3"
+llm-chain = "0.10.1"
 tokio = { version = "1", features = ["full"] }
-futures = "0.3"
+anyhow = '1.0'
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

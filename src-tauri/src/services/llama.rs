@@ -1,9 +1,9 @@
-use super::{error::LLMError, model_path::find_local_model};
+use super::{error::LLMError, model::find_local_model};
 use llm_chain::{parameters, prompt, traits::Executor};
 use llm_chain_llama::{Executor as LlamaExecutor, PerExecutor, PerInvocation};
-use llm_chain_openai::chatgpt::Executor as ChatGPTExecutor;
-use std::{error::Error, io::Write};
+use std::io::Write;
 
+#[derive(Copy, Clone)]
 pub struct LLMCtx<T: Executor> {
     pub exec: T,
     processing: bool,
@@ -54,14 +54,3 @@ impl LLMCtx<LlamaExecutor> {
         Err(LLMError::IsProcessing)
     }
 }
-
-// impl LLMCtx<ChatGPTExecutor> {
-//     pub fn spawn_chatgpt() -> Result<Self, Box<dyn Error>> {
-//         let executor = ChatGPTExecutor::new()?;
-
-//         Ok(Self {
-//             exec: executor,
-//             processing: false,
-//         })
-//     }
-// }
