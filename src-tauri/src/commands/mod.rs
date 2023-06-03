@@ -4,12 +4,17 @@ use llm_chain_llama::Executor as LlamaExecutor;
 use tokio::sync::mpsc;
 
 use crate::services::error::LLMError;
-use crate::services::llama::LLMCtx;
-use crate::Channel;
+use crate::services::llama::LLM;
+use crate::services::models::find_local_models;
+use crate::{AppState, Channel};
 
 #[tauri::command]
-pub fn run_llama(window: tauri::Window, state: tauri::State<Channel>) {
-    let (tx, mut rx) = mpsc::channel(32);
+pub fn run_llama(
+    app_handle: tauri::AppHandle,
+    window: tauri::Window,
+    state: tauri::State<Channel>,
+) {
+    let (tx, mut rx) = mpsc::channel(10);
     let tx_guard = &mut *state.tx.lock().unwrap();
 
     match tx_guard {
@@ -28,7 +33,7 @@ pub fn run_llama(window: tauri::Window, state: tauri::State<Channel>) {
             *tx_guard = Some(tx);
 
             tauri::async_runtime::spawn(async move {
-                let mut llm = LLMCtx::spawn_llama().unwrap();
+                let mut llm = LLM::spawn_llama(&app_handle).unwrap();
 
                 window
                     .emit(
@@ -101,7 +106,7 @@ pub fn send_message(
 }
 
 async fn feed_input(
-    llm: &mut LLMCtx<LlamaExecutor>,
+    llm: &mut LLM<LlamaExecutor>,
     input: String,
 ) -> Result<String, LLMError> {
     let res = llm.feed_input(&input).await;
@@ -115,4 +120,18 @@ async fn feed_input(
 #[derive(Clone, serde::Serialize)]
 struct Payload {
     message: String,
+}
+
+#[tauri::command]
+pub fn update_llm_models(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<AppState>,
+) -> Result<Vec<String>, String> {
+    let updated_models = find_local_models(&app_handle).unwrap();
+    let models = &mut *state.local_models.try_lock().unwrap();
+    *models = updated_models.clone();
+
+    println!("models in state>>> {:?}", models);
+
+    Ok(updated_models)
 }

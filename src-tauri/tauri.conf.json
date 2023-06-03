@@ -13,6 +13,25 @@
   "tauri": {
     "allowlist": {
       "all": false,
+      "path": {
+        "all": true
+      },
+      "fs": {
+        "all": false,
+        "copyFile": false,
+        "createDir": true,
+        "exists": false,
+        "readDir": true,
+        "readFile": false,
+        "removeDir": false,
+        "removeFile": true,
+        "renameFile": false,
+        "scope": [
+          "$APP/llm/*",
+          "/Users/horus/Library/Application Support/lobot/*"
+        ],
+        "writeFile": false
+      },
       "dialog": {
         "all": true,
         "ask": false,

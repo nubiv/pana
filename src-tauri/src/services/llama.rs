@@ -1,18 +1,19 @@
-use super::{error::LLMError, model::find_local_model};
+use super::{error::LLMError, models::find_local_models};
 use llm_chain::{parameters, prompt, traits::Executor};
 use llm_chain_llama::{Executor as LlamaExecutor, PerExecutor, PerInvocation};
 use std::io::Write;
 
-#[derive(Copy, Clone)]
-pub struct LLMCtx<T: Executor> {
+pub struct LLM<T: Executor> {
     pub exec: T,
     processing: bool,
 }
 
-impl LLMCtx<LlamaExecutor> {
-    pub fn spawn_llama() -> Result<Self, LLMError> {
-        let model_path = find_local_model().unwrap();
-        let exec_options = PerExecutor::new().with_model_path(&model_path);
+impl LLM<LlamaExecutor> {
+    pub fn spawn_llama(
+        app_handle: &tauri::AppHandle,
+    ) -> Result<Self, LLMError> {
+        let model_path = find_local_models(app_handle).unwrap();
+        let exec_options = PerExecutor::new().with_model_path(&model_path[0]);
         let mut inv_options = PerInvocation::new();
         inv_options.n_threads = Some(1);
 

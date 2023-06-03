@@ -1,3 +1,3 @@
 pub mod error;
 pub mod llama;
-pub mod model;
+pub mod models;
