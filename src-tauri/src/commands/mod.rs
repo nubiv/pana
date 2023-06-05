@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 use llm_chain_llama::Executor as LlamaExecutor;
 use tokio::sync::mpsc;
 
+use crate::services::downloader::download;
 use crate::services::error::LLMError;
 use crate::services::llama::LLM;
 use crate::services::models::find_local_models;
@@ -47,7 +48,7 @@ pub fn run_llama(
                 loop {
                     match rx.recv().await {
                         Some(input) => {
-                            match feed_input(&mut llm, input).await {
+                            match llm.feed_input(&input).await {
                                 Ok(res) => {
                                     // TODO:
                                     // setup status code inside input
@@ -105,18 +106,6 @@ pub fn send_message(
     Ok(())
 }
 
-async fn feed_input(
-    llm: &mut LLM<LlamaExecutor>,
-    input: String,
-) -> Result<String, LLMError> {
-    let res = llm.feed_input(&input).await;
-
-    match res {
-        Ok(s) => Ok(s),
-        Err(e) => Err(e),
-    }
-}
-
 #[derive(Clone, serde::Serialize)]
 struct Payload {
     message: String,
@@ -134,4 +123,11 @@ pub fn update_llm_models(
     println!("models in state>>> {:?}", models);
 
     Ok(updated_models)
+}
+
+#[tauri::command]
+pub fn download_model(app_handle: tauri::AppHandle) {
+    tauri::async_runtime::spawn(async move {
+        download(&app_handle).await;
+    });
 }

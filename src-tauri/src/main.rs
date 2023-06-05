@@ -8,7 +8,7 @@ use std::sync::Mutex;
 use tauri::{async_runtime::Sender, generate_handler, App, Manager};
 
 mod commands;
-use commands::{run_llama, send_message, update_llm_models};
+use commands::{download_model, run_llama, send_message, update_llm_models};
 mod services;
 use services::models::{create_llm_dir, find_local_models, is_llm_dir_existed};
 
@@ -57,7 +57,8 @@ fn main() {
         .invoke_handler(generate_handler![
             run_llama,
             send_message,
-            update_llm_models
+            update_llm_models,
+            download_model
         ])
         .setup(|app| {
             let app_handle = app.app_handle();

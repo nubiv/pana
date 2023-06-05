@@ -29,6 +29,10 @@ async function runLlama() {
 async function stopLlama() {
   await invoke('stop_llama')
 }
+
+async function download() {
+  await invoke('download_model')
+}
 </script>
 
 <Input
@@ -38,3 +42,4 @@ async function stopLlama() {
 <Button on:click="{sendMessage}">Send</Button>
 <Button on:click="{runLlama}">Run llama</Button>
 <Button on:click="{stopLlama}">Stop llama</Button>
+<Button on:click="{download}">Download</Button>
