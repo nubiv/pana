@@ -1,7 +1,8 @@
 use futures_util::TryStreamExt;
+use tauri::Manager;
 use tokio::io::AsyncWriteExt;
 
-pub async fn download(app_handle: &tauri::AppHandle) {
+pub async fn download(app_handle: &tauri::AppHandle, window: &tauri::Window) {
     let app_data_dir = app_handle.path_resolver().app_data_dir().unwrap();
     let llm_path = app_data_dir.join("llm");
     let model_path = llm_path.join("wizardLM-7B.ggml.q4_0.bin");
@@ -19,6 +20,8 @@ pub async fn download(app_handle: &tauri::AppHandle) {
             0
         }
     };
+
+    window.emit("system", portion).unwrap();
 
     let client = reqwest::Client::new();
     let res = client

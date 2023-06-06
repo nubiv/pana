@@ -13,6 +13,10 @@ import {
 } from '$components/ui/sheet'
 import { Settings } from 'lucide-svelte'
 import Toggle from './ui/toggle/Toggle.svelte'
+import Collapsible from './Collapsible.svelte'
+import { LLMState } from '$lib/store/llm'
+
+console.log($LLMState)
 </script>
 
 <Sheet>
@@ -24,22 +28,10 @@ import Toggle from './ui/toggle/Toggle.svelte'
   <SheetContent position="right" size="sm">
     <SheetHeader>
       <SheetTitle>Settings</SheetTitle>
-      <SheetDescription>
-        Make changes to your settings here. Click save when you're done.
-      </SheetDescription>
     </SheetHeader>
-    <div class="grid gap-4 py-4">
-      <div class="grid grid-cols-4 items-center gap-4">
-        <Label for="name" class="text-right">Name</Label>
-      </div>
-      <div class="grid grid-cols-4 items-center gap-4">
-        <Label for="username" class="text-right">Username</Label>
-      </div>
-    </div>
-    <SheetFooter>
-      <SheetClose>
-        <Button type="submit">Save changes</Button>
-      </SheetClose>
-    </SheetFooter>
+    <p class="w-auto space-y-2 pt-5">Currently running:<br /> Llama</p>
+    <Collapsible title="Local Models" list="{$LLMState.localModels}" />
+    <Collapsible title="Available Models" list="{[]}" />
+    <Collapsible title="Download" list="{['downloading 1', 'downloading 2']}" />
   </SheetContent>
 </Sheet>

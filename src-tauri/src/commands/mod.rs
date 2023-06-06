@@ -1,3 +1,4 @@
+use std::ops::Index;
 use std::sync::{Arc, Mutex, MutexGuard};
 
 use llm_chain_llama::Executor as LlamaExecutor;
@@ -111,23 +112,40 @@ struct Payload {
     message: String,
 }
 
-#[tauri::command]
-pub fn update_llm_models(
-    app_handle: tauri::AppHandle,
-    state: tauri::State<AppState>,
-) -> Result<Vec<String>, String> {
-    let updated_models = find_local_models(&app_handle).unwrap();
-    let models = &mut *state.local_models.try_lock().unwrap();
-    *models = updated_models.clone();
-
-    println!("models in state>>> {:?}", models);
-
-    Ok(updated_models)
+#[derive(Clone, serde::Serialize)]
+struct Models {
+    is_running: bool,
+    running_model: String,
+    local_models: Vec<String>,
 }
 
 #[tauri::command]
-pub fn download_model(app_handle: tauri::AppHandle) {
+pub fn update_llm_models(
+    app_handle: tauri::AppHandle,
+    window: tauri::Window,
+    state: tauri::State<AppState>,
+) {
+    let updated_models = find_local_models(&app_handle).unwrap();
+    let models = &mut *state.local_models.try_lock().unwrap();
+    *models = updated_models;
+
+    println!("models in state>>> {:?}", models);
+
+    window
+        .emit(
+            "models",
+            Models {
+                is_running: false,
+                running_model: String::from(""),
+                local_models: models.clone(),
+            },
+        )
+        .unwrap();
+}
+
+#[tauri::command]
+pub fn download_model(app_handle: tauri::AppHandle, window: tauri::Window) {
     tauri::async_runtime::spawn(async move {
-        download(&app_handle).await;
+        download(&app_handle, &window).await;
     });
 }

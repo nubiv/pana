@@ -1,7 +1,7 @@
 <script lang="ts">
 import { invoke } from '@tauri-apps/api/tauri'
 import { output } from '../store/output'
-import { llmState } from '../store/llm-state'
+import { LLMState } from '../store/llm'
 import { Input } from '$components/ui/input'
 import { Button } from '$components/ui/button'
 
@@ -13,7 +13,7 @@ async function sendMessage() {
     return
   }
 
-  if (!$llmState) {
+  if (!$LLMState.isRunning) {
     alert('Wake Llama up first...')
     return
   }
