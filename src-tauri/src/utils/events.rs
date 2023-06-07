@@ -6,7 +6,7 @@ pub trait EventType<'a> {
 }
 pub struct Noticification;
 impl<'a> EventType<'a> for Noticification {
-    const NAME: &'a str = "noticification";
+    const NAME: &'a str = "notification";
     type Payload = NoticificationPayload;
 }
 pub struct Error;

@@ -1,9 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use llm_chain::traits::Executor;
-use serde::Serialize;
-use services::llama::LLM;
 use std::sync::Mutex;
 use tauri::{async_runtime::Sender, generate_handler, App, Manager};
 
@@ -70,7 +67,7 @@ fn main() {
             //     "Welcome back!",
             // );
 
-            match is_llm_dir_existed(&app_handle) {
+            match is_llm_dir_existed(&app_handle)? {
                 true => {
                     let models = find_local_models(&app_handle).unwrap();
 

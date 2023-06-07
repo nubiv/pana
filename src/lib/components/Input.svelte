@@ -14,12 +14,14 @@ async function sendMessage() {
   }
 
   // if (!$LLMState.isRunning) {
-  //   alert('Wake Llama up first...')
+  //   alert('Wake Lobot up first...')
   //   return
   // }
 
   await invoke('send_message', { message: message })
   output.update((prev) => `${prev}\nMe: ${message}`)
+
+  message = ''
 }
 
 async function runLlama() {
@@ -38,8 +40,9 @@ async function download() {
 <Input
   type="message"
   placeholder="Enter your message..."
-  bind:value="{message}" />
+  bind:value="{message}"
+  on:keydown="{(e) => e.key === 'Enter' && sendMessage()}" />
 <Button on:click="{sendMessage}">Send</Button>
-<Button on:click="{runLlama}">Run llama</Button>
-<Button on:click="{stopLlama}">Stop llama</Button>
-<Button on:click="{download}">Download</Button>
+<Button on:click="{runLlama}">Activate Lobot</Button>
+<!-- <Button on:click="{stopLlama}">Shut Lobot</Button>
+<Button on:click="{download}">Download</Button> -->

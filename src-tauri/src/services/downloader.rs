@@ -1,8 +1,16 @@
+use anyhow::anyhow;
 use futures_util::TryStreamExt;
 use tokio::io::AsyncWriteExt;
 
-pub async fn download(app_handle: &tauri::AppHandle, window: &tauri::Window) {
-    let app_data_dir = app_handle.path_resolver().app_data_dir().unwrap();
+use crate::utils::errors::DownloadError;
+
+pub async fn download(
+    app_handle: &tauri::AppHandle,
+    window: &tauri::Window,
+) -> Result<(), DownloadError> {
+    let app_data_dir = app_handle.path_resolver().app_data_dir().ok_or(
+        DownloadError::Custom(anyhow!("Failed to get app data dir.")),
+    )?;
     let llm_path = app_data_dir.join("llm");
     let model_path = llm_path.join("wizardLM-7B.ggml.q4_0.bin");
 
@@ -36,19 +44,20 @@ pub async fn download(app_handle: &tauri::AppHandle, window: &tauri::Window) {
         .append(true)
         .create(true)
         .open(&model_path)
-        .await
-        .unwrap();
+        .await?;
 
     match res {
         Ok(res) => {
-            let length = res.content_length().unwrap() as f64;
+            let length = res.content_length().ok_or(DownloadError::Custom(
+                anyhow!("Model does not exist."),
+            ))? as f64;
             println!("content-length {}", length);
 
             let mut stream = res.bytes_stream();
 
             let mut progress = portion as f64;
 
-            while let Some(chunk) = stream.try_next().await.unwrap() {
+            while let Some(chunk) = stream.try_next().await? {
                 if let Err(e) = model.write_all(&chunk).await {
                     println!("error out {}", e);
                 };
@@ -59,7 +68,9 @@ pub async fn download(app_handle: &tauri::AppHandle, window: &tauri::Window) {
             }
 
             println!("download completed.");
+
+            Ok(())
         }
-        Err(e) => println!("dowanload err {}", e),
+        Err(e) => Err(DownloadError::Custom(anyhow::Error::new(e))),
     }
 }

@@ -5,7 +5,6 @@ import { onDestroy, onMount } from 'svelte'
 import { LLMState } from '$lib/store/llm'
 import { output } from '$lib/store/output'
 
-let unlistenSys: UnlistenFn
 let unlistenModel: UnlistenFn
 let unlistenNoticification: UnlistenFn
 let unlistenResponse: UnlistenFn
@@ -13,17 +12,6 @@ let unlistenError: UnlistenFn
 let unlistenDownload: UnlistenFn
 
 onMount(async () => {
-  //   unlistenSys = await listen('system_message', (event) => {
-  //     const res = event.payload as any
-
-  //     if (res.message === 'Llama activated...') {
-  //       LLMState.update((prev) => {
-  //         return { ...prev, isRunning: true }
-  //       })
-  //       alert(res.message)
-  //     }
-  //   })
-
   unlistenModel = await listen('model', (event) => {
     const { running_model, local_models } = event.payload as any
 
@@ -43,15 +31,15 @@ onMount(async () => {
       LLMState.update((prev) => {
         return { ...prev, isRunning: true }
       })
-
-      alert(res.message)
     }
+
+    alert(res.message)
   })
 
   unlistenResponse = await listen('response', (event) => {
     const res = event.payload as any
     console.log('start listening...')
-    output.update((pre) => `${pre}\nLlama: ${res.message}`)
+    output.update((pre) => `${pre}\nLobot: ${res.message}`)
   })
 
   unlistenDownload = await listen('download', (event) => {
@@ -66,7 +54,6 @@ onMount(async () => {
 })
 
 onDestroy(() => {
-  //   unlistenSys()
   unlistenModel()
   unlistenDownload()
   unlistenError()

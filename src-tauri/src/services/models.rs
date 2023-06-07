@@ -1,36 +1,53 @@
+use anyhow::anyhow;
 use std::{error::Error, fs};
 
-pub fn is_llm_dir_existed(app_handle: &tauri::AppHandle) -> bool {
-    let app_data_dir = app_handle.path_resolver().app_data_dir().unwrap();
+use crate::utils::errors::AppError;
+
+pub fn is_llm_dir_existed(
+    app_handle: &tauri::AppHandle,
+) -> Result<bool, AppError> {
+    let app_data_dir = app_handle
+        .path_resolver()
+        .app_data_dir()
+        .ok_or(AppError::Custom(anyhow!("Failed to get app data dir.")))?;
     let llm_dir = app_data_dir.join("llm");
 
     match fs::read_dir(llm_dir) {
-        Ok(_) => true,
-        Err(e) => {
-            println!("is llm dir existed error: {}", e);
-            false
-        }
+        Ok(_) => Ok(true),
+        Err(e) => Ok(false),
     }
 }
 
-pub fn create_llm_dir(app: &tauri::AppHandle) -> Result<(), Box<dyn Error>> {
-    let app_data_dir = app.path_resolver().app_data_dir().unwrap();
+pub fn create_llm_dir(app_handle: &tauri::AppHandle) -> Result<(), AppError> {
+    let app_data_dir = app_handle
+        .path_resolver()
+        .app_data_dir()
+        .ok_or(AppError::Custom(anyhow!("Failed to get app data dir.")))?;
     let llm_dir = app_data_dir.join("llm");
 
     match fs::create_dir(llm_dir) {
         Ok(_) => Ok(()),
-        Err(e) => Err(Box::new(e)),
+        Err(e) => {
+            Err(AppError::Custom(anyhow!("Failed to create llm dir: {}", e)))
+        }
     }
 }
 
-pub fn find_local_models(app: &tauri::AppHandle) -> Result<Vec<String>, ()> {
-    let app_data_dir = app.path_resolver().app_data_dir().unwrap();
+pub fn find_local_models(
+    app_handle: &tauri::AppHandle,
+) -> Result<Vec<String>, AppError> {
+    let app_data_dir = app_handle
+        .path_resolver()
+        .app_data_dir()
+        .ok_or(AppError::Custom(anyhow!("Failed to get app data dir.")))?;
     let llm_dir = app_data_dir.join("llm");
 
     let mut models = vec![];
     let files = match fs::read_dir(llm_dir) {
         Ok(files) => files,
-        Err(_) => return Err(()),
+        Err(_) => {
+            return Err(AppError::Custom(anyhow!("Failed to read llm dir.")))
+        }
     };
     // Iterate over the files and return the first `.bin` file found
     for file in files {

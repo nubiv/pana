@@ -1,4 +1,6 @@
-use super::{error::LLMError, models::find_local_models};
+use crate::utils::errors::LLMError;
+
+use super::models::find_local_models;
 use llm_chain::{parameters, prompt, traits::Executor};
 use llm_chain_llama::{Executor as LlamaExecutor, PerExecutor, PerInvocation};
 use std::io::Write;
@@ -40,6 +42,10 @@ impl LLM<LlamaExecutor> {
     ) -> Result<String, LLMError> {
         if !self.processing {
             self.processing = true;
+
+            let prompt = "A dialog, where User interacts with AI. AI is helpful, kind, obedient, honest, and knows its own limits.
+            User: Hello, AI.
+            AI: Hello! How can I assist you today?";
 
             let res = prompt!(input)
                 .run(&parameters!(), &self.exec)

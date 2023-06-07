@@ -1,14 +1,11 @@
-use std::ops::Index;
 use std::sync::{Arc, Mutex, MutexGuard};
 
-use llm_chain_llama::Executor as LlamaExecutor;
 use tokio::sync::mpsc;
 
 use crate::services::downloader::download;
-use crate::services::error::LLMError;
 use crate::services::llama::LLM;
 use crate::services::models::find_local_models;
-use crate::utils::event::*;
+use crate::utils::events::*;
 use crate::{AppState, Channel};
 
 #[tauri::command]
@@ -23,7 +20,7 @@ pub fn run_llama(
     match tx_guard {
         Some(_) => {
             let notification_payload = NoticificationPayload {
-                message: String::from("Llama has been running already..."),
+                message: String::from("Lobot has been running already..."),
             };
 
             AppEvent::<Noticification>::new(notification_payload).emit(&window);
@@ -35,7 +32,7 @@ pub fn run_llama(
                 let mut llm = LLM::spawn_llama(&app_handle).unwrap();
 
                 let notification_payload = NoticificationPayload {
-                    message: String::from("Llama activated..."),
+                    message: String::from("Lobot activated..."),
                 };
 
                 AppEvent::<Noticification>::new(notification_payload)
@@ -83,16 +80,11 @@ pub fn send_message(
         });
     } else {
         let notification_payload = NoticificationPayload {
-            message: String::from("Wake Llama up first..."),
+            message: String::from("Wake Lobot up first..."),
         };
 
         AppEvent::<Noticification>::new(notification_payload).emit(&window);
     };
-}
-
-#[derive(Clone, serde::Serialize)]
-struct Payload {
-    message: String,
 }
 
 #[derive(Clone, serde::Serialize)]

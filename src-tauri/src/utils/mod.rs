@@ -1,1 +1,2 @@
-pub mod event;
+pub mod errors;
+pub mod events;
