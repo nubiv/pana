@@ -13,7 +13,7 @@ impl LLM<LlamaExecutor> {
         app_handle: &tauri::AppHandle,
     ) -> Result<Self, LLMError> {
         let model_path = find_local_models(app_handle).unwrap();
-        let exec_options = PerExecutor::new().with_model_path(&model_path[0]);
+        let exec_options = PerExecutor::new().with_model_path(&model_path[2]);
         let mut inv_options = PerInvocation::new();
         inv_options.n_threads = Some(1);
 

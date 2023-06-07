@@ -8,6 +8,7 @@ use crate::services::downloader::download;
 use crate::services::error::LLMError;
 use crate::services::llama::LLM;
 use crate::services::models::find_local_models;
+use crate::utils::event::*;
 use crate::{AppState, Channel};
 
 #[tauri::command]
@@ -21,15 +22,11 @@ pub fn run_llama(
 
     match tx_guard {
         Some(_) => {
-            window
-                .emit(
-                    "system_message",
-                    Payload {
-                        message: "Llama has been running already..."
-                            .to_string(),
-                    },
-                )
-                .unwrap();
+            let notification_payload = NoticificationPayload {
+                message: String::from("Llama has been running already..."),
+            };
+
+            AppEvent::<Noticification>::new(notification_payload).emit(&window);
         }
         None => {
             *tx_guard = Some(tx);
@@ -37,37 +34,28 @@ pub fn run_llama(
             tauri::async_runtime::spawn(async move {
                 let mut llm = LLM::spawn_llama(&app_handle).unwrap();
 
-                window
-                    .emit(
-                        "system_message",
-                        Payload {
-                            message: "Llama activated...".to_string(),
-                        },
-                    )
-                    .unwrap();
+                let notification_payload = NoticificationPayload {
+                    message: String::from("Llama activated..."),
+                };
+
+                AppEvent::<Noticification>::new(notification_payload)
+                    .emit(&window);
 
                 loop {
                     match rx.recv().await {
-                        Some(input) => {
-                            match llm.feed_input(&input).await {
-                                Ok(res) => {
-                                    // TODO:
-                                    // setup status code inside input
-                                    // shut down gracefully if status code matches
-                                    window
-                                        .emit(
-                                            "incoming_response",
-                                            Payload {
-                                                message: res.to_string(),
-                                            },
-                                        )
-                                        .unwrap();
-                                }
-                                Err(e) => {
-                                    println!("run llama block {}", e)
-                                }
+                        Some(input) => match llm.feed_input(&input).await {
+                            Ok(res) => {
+                                let response_payload = ResponsePayload {
+                                    message: res.to_string(),
+                                };
+
+                                AppEvent::<Response>::new(response_payload)
+                                    .emit(&window);
                             }
-                        }
+                            Err(e) => {
+                                println!("run llama block {}", e)
+                            }
+                        },
                         None => println!("the sender dropped"),
                     }
                 }
@@ -83,7 +71,7 @@ pub fn send_message(
     window: tauri::Window,
     state: tauri::State<Channel>,
     message: String,
-) -> Result<(), String> {
+) {
     let tx_guard = &*state.tx.lock().unwrap();
 
     if let Some(tx) = tx_guard {
@@ -94,17 +82,12 @@ pub fn send_message(
             }
         });
     } else {
-        window
-            .emit(
-                "system_message",
-                Payload {
-                    message: "Wake Llama up first...".to_string(),
-                },
-            )
-            .unwrap();
-    };
+        let notification_payload = NoticificationPayload {
+            message: String::from("Wake Llama up first..."),
+        };
 
-    Ok(())
+        AppEvent::<Noticification>::new(notification_payload).emit(&window);
+    };
 }
 
 #[derive(Clone, serde::Serialize)]
@@ -129,18 +112,12 @@ pub fn update_llm_models(
     let models = &mut *state.local_models.try_lock().unwrap();
     *models = updated_models;
 
-    println!("models in state>>> {:?}", models);
+    let model_payload = ModelPayload {
+        running_model: String::from(""),
+        local_models: models.clone(),
+    };
 
-    window
-        .emit(
-            "models",
-            Models {
-                is_running: false,
-                running_model: String::from(""),
-                local_models: models.clone(),
-            },
-        )
-        .unwrap();
+    AppEvent::<Model>::new(model_payload).emit(&window);
 }
 
 #[tauri::command]

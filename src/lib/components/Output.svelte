@@ -10,21 +10,19 @@ import { onDestroy } from 'svelte'
 import { output } from '$store/output'
 import { AspectRatio } from './ui/aspect-ratio'
 
-type TPayload = {
-  message: string
-}
+// type TPayload = {
+//   message: string
+// }
 
-const unlisten = listen('incoming_response', (event) => {
-  // event.event is the event name (useful if you want to use a single callback fn for multiple event types)
-  // event.payload is the payload object
-  const res = event.payload as TPayload
-  console.log('start listening...')
-  output.update((pre) => `${pre}\nLlama: ${res.message}`)
-})
+// const unlisten = listen('response', (event) => {
+//   const res = event.payload as TPayload
+//   console.log('start listening...')
+//   output.update((pre) => `${pre}\nLlama: ${res.message}`)
+// })
 
-onDestroy(async () => {
-  await unlisten.then(() => console.log('stop listening...'))
-})
+// onDestroy(async () => {
+//   await unlisten.then(() => console.log('stop listening...'))
+// })
 </script>
 
 <AspectRatio

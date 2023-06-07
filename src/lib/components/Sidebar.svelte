@@ -15,8 +15,6 @@ import { Settings } from 'lucide-svelte'
 import Toggle from './ui/toggle/Toggle.svelte'
 import Collapsible from './Collapsible.svelte'
 import { LLMState } from '$lib/store/llm'
-
-console.log($LLMState)
 </script>
 
 <Sheet>

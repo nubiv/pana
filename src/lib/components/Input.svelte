@@ -13,10 +13,10 @@ async function sendMessage() {
     return
   }
 
-  if (!$LLMState.isRunning) {
-    alert('Wake Llama up first...')
-    return
-  }
+  // if (!$LLMState.isRunning) {
+  //   alert('Wake Llama up first...')
+  //   return
+  // }
 
   await invoke('send_message', { message: message })
   output.update((prev) => `${prev}\nMe: ${message}`)

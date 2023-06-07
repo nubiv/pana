@@ -11,6 +11,7 @@ mod commands;
 use commands::{download_model, run_llama, send_message, update_llm_models};
 mod services;
 use services::models::{create_llm_dir, find_local_models, is_llm_dir_existed};
+mod utils;
 
 #[derive(Default)]
 pub struct Channel {

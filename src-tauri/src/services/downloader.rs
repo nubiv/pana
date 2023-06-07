@@ -1,5 +1,4 @@
 use futures_util::TryStreamExt;
-use tauri::Manager;
 use tokio::io::AsyncWriteExt;
 
 pub async fn download(app_handle: &tauri::AppHandle, window: &tauri::Window) {
@@ -21,6 +20,7 @@ pub async fn download(app_handle: &tauri::AppHandle, window: &tauri::Window) {
         }
     };
 
+    // replace the following line with AppEvent::<Download>
     window.emit("system", portion).unwrap();
 
     let client = reqwest::Client::new();
