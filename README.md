@@ -11,11 +11,11 @@ A locally hosted desktop assistant leveraging LLMs, enabling offline question-an
 > **🔔 Note!!!**  
 > This project is currently in its early stages of development.
 
-## Technologies Used
+## Stacks Used
 
-- Tauri
-- SvelteKit
-<!-- - Tailwind CSS -->
+- [tauri](https://github.com/tauri-apps/tauri)
+- [svelte-kit](https://github.com/sveltejs/kit)
+- [tailwindcss](https://github.com/tailwindlabs/tailwindcss)
 
 ## Prerequisites
 
@@ -25,7 +25,7 @@ Before getting started with the Tauri project, ensure that you have the followin
 
 2. Rust: Tauri is powered by Rust, so you'll need to have Rust installed. You can install Rust by following the instructions on their website: https://www.rust-lang.org.
 
-3. LLM: Place a GGML-targeting `.bin` LLM model (currently only tested with Llama model) in the `llm` folder.
+<!-- 3. LLM: Place a GGML-targeting `.bin` LLM model (currently only tested with Llama model) in the `llm` folder. -->
 
 Once you have these prerequisites installed, you're ready to start working with Tauri and building your applications.
 
@@ -47,18 +47,20 @@ Not yet.
 
 Offline Mode
 
-- [x] Uncontextual conversation with LLM model
+<!-- - [x] Uncontextual conversation with LLM model -->
+
 - [ ] Contextual conversation with LLM model for assistance and support
 - [ ] Search functionality to quickly locate information within the document
 - [ ] Summarization of lengthy documents for easy understanding
 
-Online Mode (Not sure if this is needed)
+<!-- Online Mode (Not sure if this is needed)
 
-- [ ] Interaction with ChatGPT or other models using your own key
+- [ ] Interaction with ChatGPT or other models using your own key -->
 
 ## Credits
 
-Thanks to the authors of [llm-chain](https://github.com/sobelio/llm-chain) for the Rust bindings over [Llama.cpp](https://github.com/ggerganov/llama.cpp).
+Thanks to the authors of [llm](https://github.com/rustformers/llm) and [llm-chain](https://github.com/sobelio/llm-chain) for the Rust bindings over [Llama.cpp](https://github.com/ggerganov/llama.cpp).
+Thanks to the authors of [shadcn-svelte](https://github.com/huntabyte/shadcn-svelte) for porting [shadcn-ui](https://github.com/shadcn/ui) to Svelte.
 
 ## Contributing
 
