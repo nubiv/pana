@@ -1,8 +1,8 @@
 [package]
 name = "lobot"
 version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "lobot"
+authors = ["horus"]
 license = ""
 repository = ""
 edition = "2021"

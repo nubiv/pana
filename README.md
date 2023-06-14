@@ -45,7 +45,7 @@ Not yet.
 
 ## Roadmap
 
-Offline Mode
+<!-- Offline Mode -->
 
 <!-- - [x] Uncontextual conversation with LLM model -->
 
@@ -59,8 +59,8 @@ Offline Mode
 
 ## Credits
 
-Thanks to the authors of [llm](https://github.com/rustformers/llm) and [llm-chain](https://github.com/sobelio/llm-chain) for the Rust bindings over [Llama.cpp](https://github.com/ggerganov/llama.cpp).
-Thanks to the authors of [shadcn-svelte](https://github.com/huntabyte/shadcn-svelte) for porting [shadcn-ui](https://github.com/shadcn/ui) to Svelte.
+- Thanks to the authors of [llm](https://github.com/rustformers/llm) and [llm-chain](https://github.com/sobelio/llm-chain) for the Rust bindings over [Llama.cpp](https://github.com/ggerganov/llama.cpp).
+- Thanks to the authors of [shadcn-svelte](https://github.com/huntabyte/shadcn-svelte) for porting [shadcn-ui](https://github.com/shadcn/ui) to Svelte.
 
 ## Contributing
 
