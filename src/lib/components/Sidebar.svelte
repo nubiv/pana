@@ -23,13 +23,18 @@ import { LLMState } from '$lib/store/llm'
       <Settings class="h-4 w-4" />
     </Toggle>
   </SheetTrigger>
-  <SheetContent position="right" size="sm">
+  <SheetContent position="right" size="lg">
     <SheetHeader>
       <SheetTitle>Settings</SheetTitle>
     </SheetHeader>
-    <p class="w-auto space-y-2 pt-5">Currently running:<br /> Llama</p>
+    <div class="w-auto space-y-2 pt-5">
+      <span class="space-y-2 mx-4 pt-3"> Currently running: </span>
+      <span class="space-y-2 mx-4 pt-3"> XXX </span>
+    </div>
     <Collapsible title="Local Models" list="{$LLMState.localModels}" />
-    <Collapsible title="Available Models" list="{[]}" />
-    <Collapsible title="Download" list="{['downloading 1', 'downloading 2']}" />
+    <Collapsible
+      title="Other Available Models"
+      list="{$LLMState.otherModels}" />
+    <!-- <Collapsible title="Download" list="{['downloading 1', 'downloading 2']}" /> -->
   </SheetContent>
 </Sheet>

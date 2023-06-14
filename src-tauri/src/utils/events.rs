@@ -50,12 +50,12 @@ impl EventPayload for ResponsePayload {}
 #[derive(Clone, serde::Serialize)]
 pub struct ModelPayload {
     pub running_model: String,
-    pub local_models: Vec<String>,
+    pub local_models: Vec<std::path::PathBuf>,
 }
 impl EventPayload for ModelPayload {}
 #[derive(Clone, serde::Serialize)]
 pub struct DownloadPayload {
-    pub message: String,
+    pub progress: String,
 }
 impl EventPayload for DownloadPayload {}
 
@@ -86,4 +86,11 @@ where
             .map_err(|e| println!("Error {:?}", e))
             .unwrap();
     }
+}
+
+#[macro_export]
+macro_rules! app_event {
+    ($window:expr, $event:ty, $payload:expr) => {
+        AppEvent::<$event>::new($payload).emit($window);
+    };
 }

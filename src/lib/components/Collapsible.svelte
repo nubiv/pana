@@ -1,15 +1,54 @@
 <script lang="ts">
-import { ChevronDown } from 'lucide-svelte'
+import {
+  ChevronDown,
+  Play,
+  StopCircle,
+  Trash2,
+  ArrowDownToLine,
+  Pause
+} from 'lucide-svelte'
 import { Button } from '$components/ui/button'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger
 } from '$components/ui/collapsible'
+import Progress from './ui/progress/Progress.svelte'
+import { invoke } from '@tauri-apps/api/tauri'
+import { DownloadState } from '$lib/store/download'
+import type { TLocalModel, TOtherModel } from '$lib/store/llm'
 
+type TModelInfo = TLocalModel | TOtherModel
 let isOpen = false
-export let list: any[]
+export let list: Record<string, TModelInfo>
 export let title: string
+
+function download(e: MouseEvent) {
+  const modelName = (e.target as HTMLButtonElement).id
+  invoke('download_model', { modelName })
+
+  let modelInfo = list[modelName] as TOtherModel
+  let size = modelInfo.size
+  let total_size = modelInfo.totalSize
+
+  DownloadState.update((prev) => {
+    return {
+      ...prev,
+      currentDownload: modelName,
+      progress: (size / total_size) * 100.0
+    }
+  })
+}
+
+function stopDownload() {
+  invoke('stop_download')
+
+  DownloadState.update((prev) => {
+    return { ...prev, currentDownload: null, progress: 0 }
+  })
+
+  invoke('update_llm_models_v2')
+}
 </script>
 
 <Collapsible open="{isOpen}" class="w-auto space-y-2 pt-5">
@@ -22,17 +61,70 @@ export let title: string
       </Button>
     </CollapsibleTrigger>
   </div>
-  <CollapsibleContent class="space-y-2">
-    {#if list.length == 0}
-      <div class="rounded-md overflow-auto border px-4 py-3 font-mono text-sm">
+  <CollapsibleContent class="space-y-2 mx-5 pt-3">
+    {#if Object.keys(list).length === 0}
+      <div class="rounded-md overflow-auto px-4 py-3 font-mono text-sm">
         None
       </div>
     {:else}
-      {#each list as item}
+      {#each Object.entries(list) as [modelName, modelInfo]}
         <div
-          class="rounded-md overflow-auto border px-4 py-3 font-mono text-sm">
-          {item}
+          class="grid grid-cols-3 rounded-md overflow-auto py-1 font-mono text-sm">
+          <div class="col-span-2">
+            {modelName}
+          </div>
+          <div class="col-span-1">
+            {#if title == 'Local Models'}
+              <Button variant="ghost" size="sm" class="px-1">
+                <Play class="h-4 w-4" />
+                <span class="sr-only">Start</span>
+              </Button>
+              <Button variant="ghost" size="sm" class="px-1">
+                <StopCircle class="h-4 w-4" />
+                <span class="sr-only">Stop</span>
+              </Button>
+              <Button variant="ghost" size="sm" class="px-1">
+                <Trash2 class="h-4 w-4" />
+                <span class="sr-only">Delete</span>
+              </Button>
+            {:else}
+              <Button
+                variant="ghost"
+                size="sm"
+                class="px-1 group"
+                id="{modelName}"
+                on:click="{(e) => download(e)}">
+                <ArrowDownToLine class="h-4 w-4 pointer-events-none" />
+                <span class="sr-only pointer-events-none">Download</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                class="px-1 group"
+                on:click="{stopDownload}">
+                <Pause class="h-4 w-4 pointer-events-none" />
+                <span class="sr-only pointer-events-none">Pause</span>
+              </Button>
+            {/if}
+          </div>
         </div>
+        {#if title != 'Local Models'}
+          <div class="grid grid-cols-10 gap-1">
+            {#if $DownloadState.currentDownload == modelName}
+              <Progress class=" col-span-9" value="{$DownloadState.progress}" />
+              <span class="col-span-1"
+                >{($DownloadState.progress * 1.0).toFixed(2)}%</span>
+            {:else}
+              <Progress
+                class=" col-span-9"
+                value="{(modelInfo.size / modelInfo.totalSize) * 100.0}" />
+              <span class="col-span-1"
+                >{((modelInfo.size / modelInfo.totalSize) * 100.0).toFixed(
+                  2
+                )}%</span>
+            {/if}
+          </div>
+        {/if}
       {/each}
     {/if}
   </CollapsibleContent>

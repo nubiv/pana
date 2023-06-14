@@ -4,8 +4,8 @@ pub enum LLMError {
     IsProcessing,
     #[error("Initing LLM failed.")]
     InitingLLMFailed,
-    #[error("Feeding input to LLM failed.")]
-    FeedingInputFailed,
+    #[error("Feeding input to LLM failed: {0}")]
+    FeedingInputFailed(String),
     #[error(transparent)]
     Custom(#[from] anyhow::Error),
 }

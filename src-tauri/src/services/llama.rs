@@ -1,9 +1,11 @@
 use crate::utils::errors::LLMError;
+use anyhow::anyhow;
 
 use super::models::find_local_models;
-use llm_chain::{parameters, prompt, traits::Executor};
-use llm_chain_llama::{Executor as LlamaExecutor, PerExecutor, PerInvocation};
-use std::io::Write;
+use llm_chain::{
+    executor, options, options::ModelRef, parameters, prompt, traits::Executor,
+};
+use llm_chain_llama::Executor as LlamaExecutor;
 
 pub struct LLM<T: Executor> {
     pub exec: T,
@@ -15,20 +17,33 @@ impl LLM<LlamaExecutor> {
         app_handle: &tauri::AppHandle,
     ) -> Result<Self, LLMError> {
         let model_path = find_local_models(app_handle).unwrap();
-        let exec_options = PerExecutor::new().with_model_path(&model_path[2]);
-        let mut inv_options = PerInvocation::new();
-        inv_options.n_threads = Some(1);
+        let model_path = model_path[2].to_str().unwrap();
 
-        let executor = LlamaExecutor::new_with_options(
-            Some(exec_options),
-            Some(inv_options),
-        )
-        .map_err(|_| LLMError::InitingLLMFailed)?;
+        let opts = options!(
+            Model: ModelRef::from_path(model_path),
+            ModelType: "llama",
+            MaxContextSize: 512_usize,
+            NThreads: 4_usize,
+            MaxTokens: 0_usize,
+            TopK: 40_i32,
+            TopP: 0.95,
+            TfsZ: 1.0,
+            TypicalP: 1.0,
+            Temperature: 0.8,
+            RepeatPenalty: 1.1,
+            RepeatPenaltyLastN: 64_usize,
+            FrequencyPenalty: 0.0,
+            PresencePenalty: 0.0,
+            Mirostat: 0_i32,
+            MirostatTau: 5.0,
+            MirostatEta: 0.1,
+            PenalizeNl: true,
+            StopSequence: vec!["\n".to_string()]
+        );
 
-        let executor = executor.with_callback(|output| {
-            print!("{}", output);
-            std::io::stdout().flush().unwrap();
-        });
+        let executor = executor!(llama, opts).map_err(|e| {
+            LLMError::Custom(anyhow!("init exec failed: {}", e))
+        })?;
 
         Ok(Self {
             exec: executor,
@@ -39,7 +54,7 @@ impl LLM<LlamaExecutor> {
     pub async fn feed_input(
         &mut self,
         input: &str,
-    ) -> Result<String, LLMError> {
+    ) -> Result<llm_chain::output::OutputStream, LLMError> {
         if !self.processing {
             self.processing = true;
 
@@ -50,12 +65,14 @@ impl LLM<LlamaExecutor> {
             let res = prompt!(input)
                 .run(&parameters!(), &self.exec)
                 .await
-                .map_err(|_| LLMError::FeedingInputFailed)?;
+                .map_err(|e| LLMError::FeedingInputFailed(e.to_string()))?;
 
-            let res_string = res.to_string();
+            let stream = res.as_stream().await.unwrap();
+
+            // let res_string = res.to_string();
 
             self.processing = false;
-            return Ok(res_string);
+            return Ok(stream);
         }
 
         Err(LLMError::IsProcessing)

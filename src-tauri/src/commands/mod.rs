@@ -1,7 +1,7 @@
-use std::sync::{Arc, Mutex, MutexGuard};
-
+use llm_chain::output::StreamExt;
 use tokio::sync::mpsc;
 
+use crate::app_event;
 use crate::services::downloader::download;
 use crate::services::llama::LLM;
 use crate::services::models::find_local_models;
@@ -29,7 +29,12 @@ pub fn run_llama(
             *tx_guard = Some(tx);
 
             tauri::async_runtime::spawn(async move {
-                let mut llm = LLM::spawn_llama(&app_handle).unwrap();
+                let mut llm = match LLM::spawn_llama(&app_handle) {
+                    Ok(llm) => llm,
+                    Err(e) => {
+                        panic!("spawn llama failed {}", e);
+                    }
+                };
 
                 let notification_payload = NoticificationPayload {
                     message: String::from("Lobot activated..."),
@@ -41,13 +46,22 @@ pub fn run_llama(
                 loop {
                     match rx.recv().await {
                         Some(input) => match llm.feed_input(&input).await {
-                            Ok(res) => {
-                                let response_payload = ResponsePayload {
-                                    message: res.to_string(),
-                                };
+                            Ok(mut res) => {
+                                while let Some(token) = res.next().await {
+                                    let response_payload = ResponsePayload {
+                                        message: token.to_string(),
+                                    };
 
-                                AppEvent::<Response>::new(response_payload)
-                                    .emit(&window);
+                                    AppEvent::<Response>::new(response_payload)
+                                        .emit(&window);
+                                }
+
+                                // let response_payload = ResponsePayload {
+                                //     message: res.to_string(),
+                                // };
+
+                                // AppEvent::<Response>::new(response_payload)
+                                //     .emit(&window);
                             }
                             Err(e) => {
                                 println!("run llama block {}", e)
@@ -113,8 +127,92 @@ pub fn update_llm_models(
 }
 
 #[tauri::command]
-pub fn download_model(app_handle: tauri::AppHandle, window: tauri::Window) {
+pub fn update_llm_models_v2(
+    app_handle: tauri::AppHandle,
+    window: tauri::Window,
+) {
+    use crate::services::models::{read_model_list, ModelPayloadInfo};
+
+    let (tx, mut rx) = tokio::sync::mpsc::channel::<ModelPayloadInfo>(10);
+
+    read_model_list(&app_handle, tx);
+
     tauri::async_runtime::spawn(async move {
-        download(&app_handle, &window).await;
+        while let Some(model_payload_info) = rx.recv().await {
+            window
+                .emit("model_v2", model_payload_info)
+                .expect("failed to emit");
+        }
     });
+}
+
+#[tauri::command]
+pub fn download_model(
+    app_handle: tauri::AppHandle,
+    window: tauri::Window,
+    model_name: String,
+    download_state: tauri::State<crate::DownloadState>,
+) {
+    use crate::services::models::ModelList;
+
+    let config_dir_path = app_handle
+        .path_resolver()
+        .resolve_resource("./models")
+        .expect("failed to resolve resource");
+
+    let config_file_path = config_dir_path.join("models.json");
+    let model_config = std::fs::File::open(config_file_path).unwrap();
+    let model_list: ModelList = serde_json::from_reader(model_config).unwrap();
+
+    let bin_dir_path = config_dir_path.join("bin");
+
+    let download_handle = tauri::async_runtime::spawn(async move {
+        let target_model = match model_list
+            .models
+            .iter()
+            .find(|model| model.name == model_name)
+        {
+            Some(model) => model,
+            None => panic!("model not found"),
+        };
+
+        download(&window, &bin_dir_path, target_model)
+            .await
+            .expect("failed to download");
+    });
+
+    // put download handle somewhere in case user wants to cancel/pause the download
+    // let mut download_state_guard = &download_state.abort_handle;
+    let mut abort_handlers_guard =
+        download_state.abort_handlers.lock().unwrap();
+    *abort_handlers_guard = Some(download_handle);
+}
+
+#[tauri::command]
+pub fn stop_download(
+    app_handle: tauri::AppHandle,
+    window: tauri::Window,
+    download_state: tauri::State<crate::DownloadState>,
+) {
+    let mut abort_handlers_guard =
+        download_state.abort_handlers.lock().unwrap();
+
+    if let Some(handle) = abort_handlers_guard.take() {
+        handle.abort();
+    }
+}
+
+#[tauri::command]
+pub fn llm_test(
+    app_handle: tauri::AppHandle,
+    window: tauri::Window,
+    message: String,
+) {
+    use crate::services::llm::{Unspawned, LLM};
+
+    let llm = LLM::<Unspawned>::default();
+    let model = find_local_models(&app_handle).unwrap();
+    let llm = llm.set_model(&model[2]);
+    let session = llm.new_session(&message);
+    // llm.start_inference(window, session);
 }

@@ -16,15 +16,15 @@ tauri-build = { version = "1.2", features = [] }
 tauri = { version = "1.2", features = ["dialog-all", "fs-create-dir", "fs-read-dir", "fs-remove-file", "path-all"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-llm-chain-local = '0.9.1'
-llm-chain-llama = "0.9.3"
-llm-chain-openai = "0.8.2"
-llm-chain = "0.10.1"
-tokio = { version = "1", features = ["full"] }
+llm = "0.1.1"
+llm-chain-llama = { git = "https://github.com/sobelio/llm-chain"}
+llm-chain = { git = "https://github.com/sobelio/llm-chain"}
+tokio = { version = "1.28.2", features = ["full"] }
 anyhow = '1.0'
 thiserror = '1.0.40'
-reqwest = "0.11.18"
+reqwest = {version = "0.11.18", features = ["stream"] }
 futures-util = "0.3.28"
+rand = "0.8.5"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

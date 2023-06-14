@@ -1,0 +1,16 @@
+{
+  "models": [
+    {
+      "name": "WizardLM-7B",
+      "filename": "wizardLM-7B.ggml.q4_0.bin",
+      "architecture": "llama",
+      "download_url": "https://huggingface.co/TheBloke/wizardLM-7B-GGML/resolve/previous_llama_ggmlv2/wizardLM-7B.ggml.q4_0.bin"
+    },
+    {
+      "name": "MPT-7B",
+      "filename": "mpt-7b-chat-q4_0.bin",
+      "architecture": "mpt",
+      "download_url": "https://huggingface.co/rustformers/mpt-7b-ggml/resolve/main/mpt-7b-chat-q4_0.bin"
+    }
+  ]
+}

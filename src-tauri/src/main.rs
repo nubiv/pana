@@ -2,10 +2,13 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::sync::Mutex;
-use tauri::{async_runtime::Sender, generate_handler, App, Manager};
+use tauri::{async_runtime::Sender, generate_handler, Manager};
 
 mod commands;
-use commands::{download_model, run_llama, send_message, update_llm_models};
+use commands::{
+    download_model, llm_test, run_llama, send_message, stop_download,
+    update_llm_models,
+};
 mod services;
 use services::models::{create_llm_dir, find_local_models, is_llm_dir_existed};
 mod utils;
@@ -24,7 +27,7 @@ pub struct Offline;
 #[derive(Debug)]
 pub struct AppState<AppMode = Offline> {
     app_mode: std::marker::PhantomData<AppMode>,
-    local_models: Mutex<Vec<String>>,
+    local_models: Mutex<Vec<std::path::PathBuf>>,
     model_in_use: Mutex<Option<String>>,
 }
 
@@ -50,22 +53,26 @@ impl AppState<Online> {
     }
 }
 
+#[derive(Default)]
+pub struct DownloadState {
+    abort_handlers: Mutex<Option<tauri::async_runtime::JoinHandle<()>>>,
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(generate_handler![
+            crate::commands::update_llm_models_v2,
             run_llama,
             send_message,
             update_llm_models,
-            download_model
+            download_model,
+            stop_download,
+            llm_test
         ])
         .setup(|app| {
             let app_handle = app.app_handle();
 
-            // tauri::api::dialog::message(
-            //     Some(&main_window),
-            //     "Hello",
-            //     "Welcome back!",
-            // );
+            // crate::services::models::read_model_list(&app_handle);
 
             match is_llm_dir_existed(&app_handle)? {
                 true => {
@@ -92,6 +99,7 @@ fn main() {
             }
 
             app.manage(Channel::default());
+            app.manage(DownloadState::default());
 
             Ok(())
         })

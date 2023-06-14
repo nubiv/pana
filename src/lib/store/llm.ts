@@ -1,23 +1,27 @@
 import { writable, type Writable } from 'svelte/store'
 
 type TLLMState = {
-  isRunning: boolean
   runnningModel: string | null
-  localModels: TLocalModels
+  localModels: Record<string, TLocalModel>
+  otherModels: Record<string, TOtherModel>
 }
 
-type TModel = {
+export type TLocalModel = {
   name: string
-  isDownloaded: boolean
-  downloadProgress: number
+  size: number
+  totalSize: number
 }
 
-type TLocalModels = TModel[]
+export type TOtherModel = {
+  name: String
+  size: number
+  totalSize: number
+}
 
 const initialState: TLLMState = {
-  isRunning: false,
   runnningModel: null,
-  localModels: []
+  localModels: {},
+  otherModels: {}
 }
 
 export const LLMState: Writable<TLLMState> = writable(initialState)

@@ -2,19 +2,19 @@ use anyhow::anyhow;
 use futures_util::TryStreamExt;
 use tokio::io::AsyncWriteExt;
 
+use crate::app_event;
 use crate::utils::errors::DownloadError;
+use crate::utils::events::*;
 
 pub async fn download(
-    app_handle: &tauri::AppHandle,
     window: &tauri::Window,
+    bin_path: &std::path::Path,
+    model_info: &crate::services::models::ModelInfo,
 ) -> Result<(), DownloadError> {
-    let app_data_dir = app_handle.path_resolver().app_data_dir().ok_or(
-        DownloadError::Custom(anyhow!("Failed to get app data dir.")),
-    )?;
-    let llm_path = app_data_dir.join("llm");
-    let model_path = llm_path.join("wizardLM-7B.ggml.q4_0.bin");
+    let model_filename = bin_path.join(&model_info.filename);
+    println!("model_filename: {:?}", model_filename);
 
-    let portion = match tokio::fs::File::open(&model_path).await {
+    let portion = match tokio::fs::File::open(&model_filename).await {
         Ok(file) => {
             let metadata = file.metadata().await.unwrap();
             println!("metadata: {:?}", metadata.len());
@@ -28,12 +28,9 @@ pub async fn download(
         }
     };
 
-    // replace the following line with AppEvent::<Download>
-    window.emit("system", portion).unwrap();
-
     let client = reqwest::Client::new();
     let res = client
-        .get("https://huggingface.co/TheBloke/wizardLM-7B-GGML/resolve/previous_llama_ggmlv2/wizardLM-7B.ggml.q4_0.bin")
+        .get(&model_info.download_url)
         .header("Range", format!("bytes={}-", &portion))
         .send()
         .await;
@@ -43,15 +40,26 @@ pub async fn download(
         .write(true)
         .append(true)
         .create(true)
-        .open(&model_path)
+        .open(&model_filename)
         .await?;
+
+    let length = client
+        .get(&model_info.download_url)
+        .send()
+        .await
+        .map_err(|e| {
+            DownloadError::Custom(anyhow!(
+                "failed to get content length. {}",
+                e
+            ))
+        })?
+        .content_length()
+        .unwrap() as f64;
+    println!("content-length {}", length);
 
     match res {
         Ok(res) => {
-            let length = res.content_length().ok_or(DownloadError::Custom(
-                anyhow!("Model does not exist."),
-            ))? as f64;
-            println!("content-length {}", length);
+            println!("download started.");
 
             let mut stream = res.bytes_stream();
 
@@ -63,7 +71,17 @@ pub async fn download(
                 };
 
                 progress += chunk.len() as f64;
-                let percentage = format!("{:.2}", progress / length);
+
+                let percentage = format!("{:.2}", progress / length * 100.0);
+
+                crate::app_event!(
+                    window,
+                    Download,
+                    DownloadPayload {
+                        progress: percentage.clone()
+                    }
+                );
+
                 println!("progress>>> {}", percentage);
             }
 

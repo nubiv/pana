@@ -28,6 +28,10 @@ async function runLlama() {
   await invoke('run_llama')
 }
 
+async function llmTest() {
+  await invoke('llm_test', { message: message })
+}
+
 async function stopLlama() {
   await invoke('stop_llama')
 }
@@ -44,5 +48,6 @@ async function download() {
   on:keydown="{(e) => e.key === 'Enter' && sendMessage()}" />
 <Button on:click="{sendMessage}">Send</Button>
 <Button on:click="{runLlama}">Activate Lobot</Button>
+<Button on:click="{llmTest}">Test LLM Version</Button>
 <!-- <Button on:click="{stopLlama}">Shut Lobot</Button>
 <Button on:click="{download}">Download</Button> -->
