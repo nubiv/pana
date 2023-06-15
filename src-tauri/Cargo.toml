@@ -16,7 +16,7 @@ tauri-build = { version = "1.2", features = [] }
 tauri = { version = "1.2", features = ["dialog-all", "fs-create-dir", "fs-read-dir", "fs-remove-file", "path-all"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-llm = "0.1.1"
+llm = { git = "https://github.com/rustformers/llm.git"}
 llm-chain-llama = { git = "https://github.com/sobelio/llm-chain"}
 llm-chain = { git = "https://github.com/sobelio/llm-chain"}
 tokio = { version = "1.28.2", features = ["full"] }

@@ -1,7 +1,9 @@
+// This is the implementation for llm_chain crate.
+// Currently is not in use because the binding is not stable.
 use crate::utils::errors::LLMError;
 use anyhow::anyhow;
 
-use super::models::find_local_models;
+use crate::utils::models::find_local_models;
 use llm_chain::{
     executor, options, options::ModelRef, parameters, prompt, traits::Executor,
 };
@@ -62,6 +64,7 @@ impl LLM<LlamaExecutor> {
             User: Hello, AI.
             AI: Hello! How can I assist you today?";
 
+            // need to find a proper prompt
             let res = prompt!(input)
                 .run(&parameters!(), &self.exec)
                 .await

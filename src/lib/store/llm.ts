@@ -2,18 +2,12 @@ import { writable, type Writable } from 'svelte/store'
 
 type TLLMState = {
   runnningModel: string | null
-  localModels: Record<string, TLocalModel>
-  otherModels: Record<string, TOtherModel>
+  localModels: Record<string, TModel>
+  otherModels: Record<string, TModel>
 }
 
-export type TLocalModel = {
+export type TModel = {
   name: string
-  size: number
-  totalSize: number
-}
-
-export type TOtherModel = {
-  name: String
   size: number
   totalSize: number
 }

@@ -1,6 +1,7 @@
 # Lobot 🤖
 
-[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/Ryc9Cbws)
+<!-- [![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/Ryc9Cbws) -->
+
 ![License](https://img.shields.io/github/license/sobelio/llm-chain?style=for-the-badge)
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 ![macOS](https://img.shields.io/badge/mac%20os-000000?style=for-the-badge&logo=macos&logoColor=F0F0F0)
@@ -70,6 +71,6 @@ Contributions are always welcome! Please submit a pull request if you'd like to 
 
 `Lobot` is licensed under the [MIT License](LICENSE.md).
 
-## Connect
+<!-- ## Connect
 
-If you have any questions, suggestions, or feedback, feel free to open an issue or join [discord](https://discord.gg/Ryc9Cbws).
+If you have any questions, suggestions, or feedback, feel free to open an issue or join [discord](https://discord.gg/Ryc9Cbws). -->

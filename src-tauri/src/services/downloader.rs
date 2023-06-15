@@ -9,15 +9,13 @@ use crate::utils::events::*;
 pub async fn download(
     window: &tauri::Window,
     bin_path: &std::path::Path,
-    model_info: &crate::services::models::ModelInfo,
+    model_info: &crate::utils::models::ModelInfo,
 ) -> Result<(), DownloadError> {
     let model_filename = bin_path.join(&model_info.filename);
-    println!("model_filename: {:?}", model_filename);
 
     let portion = match tokio::fs::File::open(&model_filename).await {
         Ok(file) => {
             let metadata = file.metadata().await.unwrap();
-            println!("metadata: {:?}", metadata.len());
 
             metadata.len()
         }
@@ -55,7 +53,6 @@ pub async fn download(
         })?
         .content_length()
         .unwrap() as f64;
-    println!("content-length {}", length);
 
     match res {
         Ok(res) => {
@@ -78,11 +75,9 @@ pub async fn download(
                     window,
                     Download,
                     DownloadPayload {
-                        progress: percentage.clone()
+                        progress: percentage
                     }
                 );
-
-                println!("progress>>> {}", percentage);
             }
 
             println!("download completed.");

@@ -108,9 +108,9 @@ pub fn read_model_list(
     let bin_path = model_config_path.join("bin");
 
     match fs::read_dir(&bin_path) {
-        Ok(_) => println!("bin dir existed"),
+        Ok(_) => {}
         Err(_) => {
-            println!("bin dir not existed");
+            println!("bin dir not existed creating...");
 
             if let Err(e) = fs::create_dir(&bin_path) {
                 println!("failed to create bin dir: {}", e);
@@ -126,7 +126,6 @@ pub fn read_model_list(
             Ok(model_info) => model_info.metadata().unwrap().len(),
             Err(_) => 0,
         };
-        println!("{:#?} {}", model, size);
 
         let model = model.clone();
         let tx = tx.clone();
@@ -144,4 +143,35 @@ pub fn read_model_list(
             tx.send(model_payload_info).await.expect("failed to send");
         });
     });
+}
+
+pub fn get_model_info(
+    app_handle: &tauri::AppHandle,
+    model_name: &str,
+) -> ModelInfo {
+    let config_dir_path = app_handle
+        .path_resolver()
+        .resolve_resource("./models")
+        .expect("failed to resolve resource");
+
+    let config_file_path = config_dir_path.join("models.json");
+    let model_config = std::fs::File::open(config_file_path).unwrap();
+    let model_list: ModelList = serde_json::from_reader(model_config).unwrap();
+
+    let target_model = match model_list
+        .models
+        .iter()
+        .find(|model| model.name == model_name)
+    {
+        Some(model) => model,
+        None => panic!("model not found"),
+    };
+
+    target_model.to_owned()
+}
+
+pub fn delete_model(model_path: &std::path::Path) -> Result<(), AppError> {
+    fs::remove_file(model_path).expect("failed to delete model file");
+
+    Ok(())
 }

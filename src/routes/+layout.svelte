@@ -2,7 +2,7 @@
 import { invoke } from '@tauri-apps/api/tauri'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { onDestroy, onMount } from 'svelte'
-import { LLMState, type TLocalModel, type TOtherModel } from '$lib/store/llm'
+import { LLMState } from '$lib/store/llm'
 import { output } from '$lib/store/output'
 import { DownloadState } from '$lib/store/download'
 
@@ -11,20 +11,8 @@ let unlistenNoticification: UnlistenFn
 let unlistenResponse: UnlistenFn
 let unlistenError: UnlistenFn
 let unlistenDownload: UnlistenFn
-let unlistenModelV2: UnlistenFn
 
 onMount(async () => {
-  unlistenModel = await listen('model', (event) => {
-    // const { running_model, local_models } = event.payload as any
-    // LLMState.update((prev) => {
-    //   return {
-    //     ...prev,
-    //     runnningModel: running_model,
-    //     localModels: local_models
-    //   }
-    // })
-  })
-
   unlistenNoticification = await listen('notification', (event) => {
     const res = event.payload as any
 
@@ -40,12 +28,11 @@ onMount(async () => {
   unlistenResponse = await listen('response', (event) => {
     const res = event.payload as any
     console.log('start listening...')
-    output.update((pre) => `${pre}\nLobot: ${res.message}`)
+    console.log(res)
+    output.update((pre) => `${pre}\nLobot: ${res}`)
   })
 
   unlistenDownload = await listen('download', (event) => {
-    // console.log('download>>>', event)
-    console.log('download>>>', event.payload)
     DownloadState.update((prev) => {
       return {
         ...prev,
@@ -62,7 +49,7 @@ onMount(async () => {
         }
       })
 
-      invoke('update_llm_models_v2').catch((e) => console.log(e))
+      invoke('update_llm_models').catch((e) => console.log(e))
     }
   })
 
@@ -70,9 +57,7 @@ onMount(async () => {
     console.log('error>>>', event)
   })
 
-  unlistenModelV2 = await listen('model_v2', (event) => {
-    console.log('model_v2>>>', event)
-
+  unlistenModel = await listen('model', (event) => {
     const { name, size, total_size } = event.payload as any
 
     if (size === total_size) {
@@ -107,7 +92,6 @@ onMount(async () => {
   })
 
   await invoke('update_llm_models').catch((e) => console.log(e))
-  await invoke('update_llm_models_v2').catch((e) => console.log(e))
 })
 
 onDestroy(() => {
@@ -116,7 +100,6 @@ onDestroy(() => {
   unlistenError()
   unlistenNoticification()
   unlistenResponse()
-  unlistenModelV2()
 })
 </script>
 

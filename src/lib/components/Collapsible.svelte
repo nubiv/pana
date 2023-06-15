@@ -16,18 +16,17 @@ import {
 import Progress from './ui/progress/Progress.svelte'
 import { invoke } from '@tauri-apps/api/tauri'
 import { DownloadState } from '$lib/store/download'
-import type { TLocalModel, TOtherModel } from '$lib/store/llm'
+import type { TModel } from '$lib/store/llm'
 
-type TModelInfo = TLocalModel | TOtherModel
 let isOpen = false
-export let list: Record<string, TModelInfo>
+export let list: Record<string, TModel>
 export let title: string
 
 function download(e: MouseEvent) {
   const modelName = (e.target as HTMLButtonElement).id
   invoke('download_model', { modelName })
 
-  let modelInfo = list[modelName] as TOtherModel
+  let modelInfo = list[modelName]
   let size = modelInfo.size
   let total_size = modelInfo.totalSize
 
@@ -47,7 +46,23 @@ function stopDownload() {
     return { ...prev, currentDownload: null, progress: 0 }
   })
 
-  invoke('update_llm_models_v2')
+  invoke('update_llm_models')
+}
+
+function loadModel(e: MouseEvent) {
+  const modelName = (e.target as HTMLButtonElement).id
+  invoke('load_model', { modelName })
+}
+
+function stopModel() {
+  invoke('stop_model')
+}
+
+function deleteModel(e: MouseEvent) {
+  const modelName = (e.target as HTMLButtonElement).id
+  invoke('delete_model', { modelName })
+
+  invoke('update_llm_models')
 }
 </script>
 
@@ -75,17 +90,31 @@ function stopDownload() {
           </div>
           <div class="col-span-1">
             {#if title == 'Local Models'}
-              <Button variant="ghost" size="sm" class="px-1">
-                <Play class="h-4 w-4" />
-                <span class="sr-only">Start</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                class="px-1 group"
+                id="{modelName}"
+                on:click="{(e) => loadModel(e)}">
+                <Play class="h-4 w-4 pointer-events-none" />
+                <span class="sr-only pointer-events-none">Start</span>
               </Button>
-              <Button variant="ghost" size="sm" class="px-1">
-                <StopCircle class="h-4 w-4" />
-                <span class="sr-only">Stop</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                class="px-1 group"
+                on:click="{stopModel}">
+                <StopCircle class="h-4 w-4 pointer-events-none" />
+                <span class="sr-only pointer-events-none">Stop</span>
               </Button>
-              <Button variant="ghost" size="sm" class="px-1">
-                <Trash2 class="h-4 w-4" />
-                <span class="sr-only">Delete</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                class="px-1 group"
+                id="{modelName}"
+                on:click="{(e) => deleteModel(e)}">
+                <Trash2 class="h-4 w-4 pointer-events-none" />
+                <span class="sr-only pointer-events-none">Delete</span>
               </Button>
             {:else}
               <Button
@@ -104,6 +133,15 @@ function stopDownload() {
                 on:click="{stopDownload}">
                 <Pause class="h-4 w-4 pointer-events-none" />
                 <span class="sr-only pointer-events-none">Pause</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                class="px-1 group"
+                id="{modelName}"
+                on:click="{(e) => deleteModel(e)}">
+                <Trash2 class="h-4 w-4 pointer-events-none" />
+                <span class="sr-only pointer-events-none">Delete</span>
               </Button>
             {/if}
           </div>

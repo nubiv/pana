@@ -39,6 +39,12 @@ async function stopLlama() {
 async function download() {
   await invoke('download_model')
 }
+
+async function sendMessageV2() {
+  await invoke('send_message_v2', { message: message })
+
+  message = ''
+}
 </script>
 
 <Input
@@ -46,8 +52,8 @@ async function download() {
   placeholder="Enter your message..."
   bind:value="{message}"
   on:keydown="{(e) => e.key === 'Enter' && sendMessage()}" />
-<Button on:click="{sendMessage}">Send</Button>
-<Button on:click="{runLlama}">Activate Lobot</Button>
-<Button on:click="{llmTest}">Test LLM Version</Button>
+<!-- <Button on:click="{sendMessage}">Send</Button> -->
+<!-- <Button on:click="{runLlama}">Activate Lobot</Button>
+<Button on:click="{llmTest}">Test LLM Version</Button> -->
 <!-- <Button on:click="{stopLlama}">Shut Lobot</Button>
 <Button on:click="{download}">Download</Button> -->
