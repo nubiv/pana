@@ -16,15 +16,15 @@ import {
 import Progress from './ui/progress/Progress.svelte'
 import { invoke } from '@tauri-apps/api/tauri'
 import { DownloadState } from '$lib/store/download'
-import type { TModel } from '$lib/store/llm'
+import { LLMState, type TModel } from '$lib/store/llm'
 
 let isOpen = false
 export let list: Record<string, TModel>
 export let title: string
 
-function download(e: MouseEvent) {
+async function download(e: MouseEvent) {
   const modelName = (e.target as HTMLButtonElement).id
-  invoke('download_model', { modelName })
+  await invoke('download_model', { modelName })
 
   let modelInfo = list[modelName]
   let size = modelInfo.size
@@ -39,30 +39,38 @@ function download(e: MouseEvent) {
   })
 }
 
-function stopDownload() {
-  invoke('stop_download')
+async function stopDownload() {
+  await invoke('stop_download')
 
   DownloadState.update((prev) => {
     return { ...prev, currentDownload: null, progress: 0 }
   })
 
-  invoke('update_llm_models')
+  await invoke('update_llm_models')
 }
 
-function loadModel(e: MouseEvent) {
+async function loadModel(e: MouseEvent) {
   const modelName = (e.target as HTMLButtonElement).id
-  invoke('load_model', { modelName })
+  await invoke('load_model', { modelName })
+
+  LLMState.update((prev) => {
+    return { ...prev, runnningModel: modelName }
+  })
 }
 
-function stopModel() {
-  invoke('stop_model')
+async function stopModel() {
+  await invoke('stop_model')
+
+  LLMState.update((prev) => {
+    return { ...prev, runnningModel: null }
+  })
 }
 
-function deleteModel(e: MouseEvent) {
+async function deleteModel(e: MouseEvent) {
   const modelName = (e.target as HTMLButtonElement).id
-  invoke('delete_model', { modelName })
+  await invoke('delete_model', { modelName })
 
-  invoke('update_llm_models')
+  await invoke('update_llm_models')
 }
 </script>
 
@@ -153,13 +161,13 @@ function deleteModel(e: MouseEvent) {
               <span class="col-span-1"
                 >{($DownloadState.progress * 1.0).toFixed(2)}%</span>
             {:else}
-              <Progress
+              <!-- <Progress
                 class=" col-span-9"
                 value="{(modelInfo.size / modelInfo.totalSize) * 100.0}" />
               <span class="col-span-1"
                 >{((modelInfo.size / modelInfo.totalSize) * 100.0).toFixed(
                   2
-                )}%</span>
+                )}%</span> -->
             {/if}
           </div>
         {/if}

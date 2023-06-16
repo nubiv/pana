@@ -13,7 +13,8 @@ edition = "2021"
 tauri-build = { version = "1.2", features = [] }
 
 [dependencies]
-tauri = { version = "1.2", features = ["dialog-all", "fs-create-dir", "fs-read-dir", "fs-remove-file", "path-all"] }
+tauri = { version = "1.2", features = ["dialog-all", "macos-private-api", "path-all"] }
+window-vibrancy = "0.3.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 llm = { git = "https://github.com/rustformers/llm.git"}

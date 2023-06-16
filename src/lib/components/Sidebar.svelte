@@ -15,6 +15,13 @@ import { Settings } from 'lucide-svelte'
 import Toggle from './ui/toggle/Toggle.svelte'
 import Collapsible from './Collapsible.svelte'
 import { LLMState } from '$lib/store/llm'
+import { resolveResource } from '@tauri-apps/api/path'
+import { invoke } from '@tauri-apps/api/tauri'
+
+async function openModelFolder() {
+  const path = await resolveResource('models')
+  await invoke('open_model_folder', { path })
+}
 </script>
 
 <Sheet>
@@ -29,12 +36,15 @@ import { LLMState } from '$lib/store/llm'
     </SheetHeader>
     <div class="w-auto space-y-2 pt-5">
       <span class="space-y-2 mx-4 pt-3"> Currently running: </span>
-      <span class="space-y-2 mx-4 pt-3"> XXX </span>
+      <span class="space-y-2 mx-4 pt-3">
+        {$LLMState.runnningModel ? $LLMState.runnningModel : 'None'}
+      </span>
     </div>
     <Collapsible title="Local Models" list="{$LLMState.localModels}" />
     <Collapsible
       title="Other Available Models"
       list="{$LLMState.otherModels}" />
-    <!-- <Collapsible title="Download" list="{['downloading 1', 'downloading 2']}" /> -->
+    <Button class="mt-4 mr-7 float-right" on:click="{openModelFolder}"
+      >View models</Button>
   </SheetContent>
 </Sheet>
