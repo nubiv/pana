@@ -7,8 +7,8 @@ use tauri::{async_runtime::Sender, generate_handler, Manager};
 mod commands;
 use commands::{
     delete_model, download_model, load_model, load_model_v2, open_model_folder,
-    send_message, send_message_v2, stop_download, stop_inference, stop_model,
-    update_llm_models,
+    send_message_v2, start_inference, stop_download, stop_inference,
+    stop_model, update_llm_models,
 };
 mod services;
 mod utils;
@@ -36,7 +36,7 @@ fn main() {
             load_model,
             load_model_v2,
             stop_model,
-            send_message,
+            start_inference,
             send_message_v2,
             download_model,
             stop_download,

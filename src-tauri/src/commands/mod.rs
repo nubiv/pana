@@ -109,13 +109,21 @@ pub fn stop_model(llm_state: tauri::State<crate::LLMState>) {
 }
 
 #[tauri::command]
-pub fn send_message(
+pub fn start_inference(
     llm_state: tauri::State<crate::LLMState>,
-    app_handle: tauri::AppHandle,
     window: tauri::Window,
     message: String,
 ) {
     let model = llm_state.model.clone();
+
+    app_event!(
+        &window,
+        Response,
+        ResponsePayload {
+            is_streaming: true,
+            token: String::from("")
+        }
+    );
 
     let handle = tauri::async_runtime::spawn_blocking(move || {
         let model_guard = model.lock().unwrap();
@@ -134,38 +142,32 @@ pub fn send_message(
             &mut rand::thread_rng(),
         ) {
             if let Some(token) = utf8_buf.push(&token) {
-                window.emit("response", token).expect("failed to emit");
+                app_event!(
+                    &window,
+                    Response,
+                    ResponsePayload {
+                        is_streaming: true,
+                        token
+                    }
+                );
             }
         }
+
+        app_event!(
+            &window,
+            Response,
+            ResponsePayload {
+                is_streaming: false,
+                token: String::from("")
+            }
+        );
     });
 
     let mut abort_handle_guard = llm_state
         .abort_handle
         .lock()
-        .expect("failed to get abort handle lock");
+        .expect("failed to get abort_handle lock");
     *abort_handle_guard = Some(handle);
-
-    // let res = session.infer::<std::convert::Infallible>(
-    //     model.as_ref(),
-    //     &mut rand::thread_rng(),
-    //     &llm::InferenceRequest {
-    //         prompt: llm::Prompt::Text(message),
-    //         parameters: &llm::InferenceParameters::default(),
-    //         play_back_previous_tokens: false,
-    //         maximum_token_count: Some(100),
-    //     },
-    //     &mut Default::default(),
-    //     |inference_response| match inference_response {
-    //         llm::InferenceResponse::PromptToken(_) => {
-    //             Ok(llm::InferenceFeedback::Continue)
-    //         }
-    //         llm::InferenceResponse::InferredToken(t) => {
-    //             println!("{t}");
-    //             Ok(llm::InferenceFeedback::Continue)
-    //         }
-    //         _ => Ok(llm::InferenceFeedback::Continue),
-    //     },
-    // );
 }
 
 #[tauri::command]
@@ -175,6 +177,7 @@ pub fn stop_inference(llm_state: tauri::State<crate::LLMState>) {
         .lock()
         .expect("failed to get abort handle lock");
 
+    // TODO: aborting the handle will not stop the inference
     if let Some(handle) = abort_handle_guard.take() {
         handle.abort();
     }
@@ -221,7 +224,8 @@ pub fn load_model_v2(
                             Ok(mut res) => {
                                 while let Some(token) = res.next().await {
                                     let response_payload = ResponsePayload {
-                                        message: token.to_string(),
+                                        is_streaming: true,
+                                        token: token.to_string(),
                                     };
 
                                     AppEvent::<Response>::new(response_payload)

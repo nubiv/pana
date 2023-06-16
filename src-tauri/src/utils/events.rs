@@ -44,7 +44,8 @@ pub struct ErrorPayload {
 impl EventPayload for ErrorPayload {}
 #[derive(Clone, serde::Serialize)]
 pub struct ResponsePayload {
-    pub message: String,
+    pub is_streaming: bool,
+    pub token: String,
 }
 impl EventPayload for ResponsePayload {}
 #[derive(Clone, serde::Serialize)]

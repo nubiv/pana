@@ -1,4 +1,3 @@
-// This is the implementation for llm crate.
 use std::{
     str::FromStr,
     sync::{Arc, Mutex},
@@ -43,12 +42,13 @@ pub fn new_session(
     let character_name = "### Assistant";
     let user_name = "### Human";
     let persona = "A chat between a human and an assistant.";
-    let history = format!(
-        "{character_name}: Hello - How may I help you today?\n\
-                 {user_name}: What is the capital of France?\n\
-                 {character_name}:  Paris is the capital of France."
-    );
-    let new_message = format!("{}: {}", user_name, message);
+    // let history = format!(
+    //     "{character_name}: Hello - How may I help you today?\n\
+    //              {user_name}: What is the capital of France?\n\
+    //              {character_name}:  Paris is the capital of France."
+    // );
+    let new_message =
+        format!("\n{}: {}\n{}:", user_name, message, character_name);
 
     let mut session = model.start_session(Default::default());
 
@@ -56,9 +56,7 @@ pub fn new_session(
         .feed_prompt::<std::convert::Infallible, llm::Prompt>(
             model.as_ref(),
             &llm::InferenceParameters::default(),
-            llm::Prompt::Text(
-                format!("{}\n{}\n{}", persona, history, new_message).as_str(),
-            ),
+            llm::Prompt::Text(format!("{}\n{}", persona, new_message).as_str()),
             &mut Default::default(),
             |_| Ok(llm::InferenceFeedback::Continue),
         )

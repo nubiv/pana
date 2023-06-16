@@ -16,7 +16,7 @@ afterUpdate(() => {
 </script>
 
 <Toggle
-  class="fixed top-0 right-[40px] m-2"
+  class="fixed top-0 right-[45px] m-2"
   bind:pressed="{pressed}"
   aria-label="toggle theme">
   <Sun class="h-4 w-4" />

@@ -3,7 +3,7 @@ import { invoke } from '@tauri-apps/api/tauri'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { onDestroy, onMount } from 'svelte'
 import { LLMState } from '$lib/store/llm'
-import { output } from '$lib/store/output'
+import { HistoryState, StreamState, type TMessage } from '$lib/store/history'
 import { DownloadState } from '$lib/store/download'
 
 let unlistenModel: UnlistenFn
@@ -16,20 +16,45 @@ onMount(async () => {
   unlistenNoticification = await listen('notification', (event) => {
     const res = event.payload as any
 
-    if (res.message === 'Llama activated...') {
-      LLMState.update((prev) => {
-        return { ...prev, isRunning: true }
-      })
-    }
-
-    alert(res.message)
+    console.log(res)
   })
 
   unlistenResponse = await listen('response', (event) => {
     const res = event.payload as any
-    console.log('start listening...')
-    console.log(res)
-    output.update((pre) => `${pre}\nLobot: ${res}`)
+
+    if (res.is_streaming === true && !$StreamState.isStreaming) {
+      StreamState.update((prev) => {
+        return {
+          ...prev,
+          isStreaming: true
+        }
+      })
+    }
+
+    if (res.token === '<|im_end|>') {
+      HistoryState.update((prev) => {
+        const newMessage: TMessage = {
+          text: $StreamState.tokens,
+          role: 'Lobot'
+        }
+        return [...prev, newMessage]
+      })
+
+      StreamState.update((prev) => {
+        return {
+          ...prev,
+          isStreaming: false,
+          tokens: ''
+        }
+      })
+    } else {
+      StreamState.update((prev) => {
+        return {
+          ...prev,
+          tokens: prev.tokens.concat(res.token)
+        }
+      })
+    }
   })
 
   unlistenDownload = await listen('download', (event) => {

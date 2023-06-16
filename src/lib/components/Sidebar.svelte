@@ -35,7 +35,7 @@ async function openModelFolder() {
       <SheetTitle>Settings</SheetTitle>
     </SheetHeader>
     <div class="w-auto space-y-2 pt-5">
-      <span class="space-y-2 mx-4 pt-3"> Currently running: </span>
+      <span class=" font-medium space-y-2 mx-4 pt-3"> Currently running: </span>
       <span class="space-y-2 mx-4 pt-3">
         {$LLMState.runnningModel ? $LLMState.runnningModel : 'None'}
       </span>

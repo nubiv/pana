@@ -1,6 +1,6 @@
 <script lang="ts">
-import Output from '$lib/components/Output.svelte'
-import Input from '$lib/components/Input.svelte'
+import Output from '$lib/components/History.svelte'
+import Input from '$lib/components/MessageField.svelte'
 </script>
 
 <main class="container h-screen">

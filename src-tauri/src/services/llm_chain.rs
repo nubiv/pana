@@ -1,5 +1,3 @@
-// This is the implementation for llm_chain crate.
-// Currently is not in use because the binding is not stable.
 use crate::utils::errors::LLMError;
 use anyhow::anyhow;
 
