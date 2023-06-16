@@ -7,14 +7,7 @@ p {
 <script lang="ts">
 import { Diamond, Sprout, XSquare, XCircle } from 'lucide-svelte'
 import { Button } from '$components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle
-} from '$components/ui/card'
+import { Card, CardContent } from '$components/ui/card'
 import { HistoryState, StreamState } from '$lib/store/history'
 import { invoke } from '@tauri-apps/api/tauri'
 

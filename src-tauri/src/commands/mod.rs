@@ -5,7 +5,7 @@ use tokio::sync::mpsc;
 
 use crate::app_event;
 use crate::services::downloader::download;
-use crate::services::llm_chain::LLM;
+// use crate::services::llm_chain::LLM;
 use crate::utils::events::*;
 use crate::Channel;
 
@@ -183,73 +183,73 @@ pub fn stop_inference(llm_state: tauri::State<crate::LLMState>) {
     }
 }
 
-#[tauri::command]
-pub fn load_model_v2(
-    app_handle: tauri::AppHandle,
-    window: tauri::Window,
-    state: tauri::State<Channel>,
-) {
-    let (tx, mut rx) = mpsc::channel(10);
-    let tx_guard = &mut *state.tx.lock().unwrap();
+// #[tauri::command]
+// pub fn load_model_v2(
+//     app_handle: tauri::AppHandle,
+//     window: tauri::Window,
+//     state: tauri::State<Channel>,
+// ) {
+//     let (tx, mut rx) = mpsc::channel(10);
+//     let tx_guard = &mut *state.tx.lock().unwrap();
 
-    match tx_guard {
-        Some(_) => {
-            let notification_payload = NoticificationPayload {
-                message: String::from("Lobot has been running already..."),
-            };
+//     match tx_guard {
+//         Some(_) => {
+//             let notification_payload = NoticificationPayload {
+//                 message: String::from("Lobot has been running already..."),
+//             };
 
-            AppEvent::<Noticification>::new(notification_payload).emit(&window);
-        }
-        None => {
-            *tx_guard = Some(tx);
+//             AppEvent::<Noticification>::new(notification_payload).emit(&window);
+//         }
+//         None => {
+//             *tx_guard = Some(tx);
 
-            tauri::async_runtime::spawn(async move {
-                let mut llm = match LLM::spawn_llama(&app_handle) {
-                    Ok(llm) => llm,
-                    Err(e) => {
-                        panic!("spawn llama failed {}", e);
-                    }
-                };
+//             tauri::async_runtime::spawn(async move {
+//                 let mut llm = match LLM::spawn_llama(&app_handle) {
+//                     Ok(llm) => llm,
+//                     Err(e) => {
+//                         panic!("spawn llama failed {}", e);
+//                     }
+//                 };
 
-                let notification_payload = NoticificationPayload {
-                    message: String::from("Lobot activated..."),
-                };
+//                 let notification_payload = NoticificationPayload {
+//                     message: String::from("Lobot activated..."),
+//                 };
 
-                AppEvent::<Noticification>::new(notification_payload)
-                    .emit(&window);
+//                 AppEvent::<Noticification>::new(notification_payload)
+//                     .emit(&window);
 
-                loop {
-                    match rx.recv().await {
-                        Some(input) => match llm.feed_input(&input).await {
-                            Ok(mut res) => {
-                                while let Some(token) = res.next().await {
-                                    let response_payload = ResponsePayload {
-                                        is_streaming: true,
-                                        token: token.to_string(),
-                                    };
+//                 loop {
+//                     match rx.recv().await {
+//                         Some(input) => match llm.feed_input(&input).await {
+//                             Ok(mut res) => {
+//                                 while let Some(token) = res.next().await {
+//                                     let response_payload = ResponsePayload {
+//                                         is_streaming: true,
+//                                         token: token.to_string(),
+//                                     };
 
-                                    AppEvent::<Response>::new(response_payload)
-                                        .emit(&window);
-                                }
+//                                     AppEvent::<Response>::new(response_payload)
+//                                         .emit(&window);
+//                                 }
 
-                                // let response_payload = ResponsePayload {
-                                //     message: res.to_string(),
-                                // };
+//                                 // let response_payload = ResponsePayload {
+//                                 //     message: res.to_string(),
+//                                 // };
 
-                                // AppEvent::<Response>::new(response_payload)
-                                //     .emit(&window);
-                            }
-                            Err(e) => {
-                                println!("run llama block {}", e)
-                            }
-                        },
-                        None => println!("the sender dropped"),
-                    }
-                }
-            });
-        }
-    }
-}
+//                                 // AppEvent::<Response>::new(response_payload)
+//                                 //     .emit(&window);
+//                             }
+//                             Err(e) => {
+//                                 println!("run llama block {}", e)
+//                             }
+//                         },
+//                         None => println!("the sender dropped"),
+//                     }
+//                 }
+//             });
+//         }
+//     }
+// }
 
 #[tauri::command]
 pub fn send_message_v2(

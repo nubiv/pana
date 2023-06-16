@@ -1,6 +1,6 @@
 <script lang="ts">
 import { invoke } from '@tauri-apps/api/tauri'
-import { HistoryState, type TMessage } from '../store/history'
+import { HistoryState, StreamState, type TMessage } from '../store/history'
 import { LLMState } from '../store/llm'
 import { Input } from '$components/ui/input'
 import { Button } from '$components/ui/button'
@@ -14,39 +14,23 @@ async function sendMessage() {
     return
   }
 
-  // if (!$LLMState.isRunning) {
-  //   alert('Wake Lobot up first...')
-  //   return
-  // }
+  if (!$LLMState.runnningModel) {
+    alert('Loading model required...')
+    message = ''
+    return
+  }
+
+  if ($StreamState.isStreaming) {
+    alert('Wait a sec...')
+    message = ''
+    return
+  }
 
   await invoke('start_inference', { message: message })
-  // output.update((prev) => `${prev}\nMe: ${message}`)
   HistoryState.update((prev) => {
     const myMessage: TMessage = { text: message, role: 'Me' }
     return [...prev, myMessage]
   })
-
-  message = ''
-}
-
-async function runLlama() {
-  await invoke('run_llama')
-}
-
-async function llmTest() {
-  await invoke('llm_test', { message: message })
-}
-
-async function stopLlama() {
-  await invoke('stop_llama')
-}
-
-async function download() {
-  await invoke('download_model')
-}
-
-async function sendMessageV2() {
-  await invoke('send_message_v2', { message: message })
 
   message = ''
 }
@@ -60,8 +44,3 @@ async function sendMessageV2() {
     on:keydown="{(e) => e.key === 'Enter' && sendMessage()}" />
   <!-- <CornerDownLeft class="fixed right-2" /> -->
 </div>
-<!-- <Button on:click="{sendMessage}">Send</Button> -->
-<!-- <Button on:click="{runLlama}">Activate Lobot</Button>
-<Button on:click="{llmTest}">Test LLM Version</Button> -->
-<!-- <Button on:click="{stopLlama}">Shut Lobot</Button>
-<Button on:click="{download}">Download</Button> -->
