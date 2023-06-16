@@ -7,8 +7,8 @@ use tauri::{async_runtime::Sender, generate_handler, Manager};
 mod commands;
 use commands::{
     delete_model, download_model, load_model, open_model_folder,
-    send_message_v2, start_inference, stop_download, stop_inference,
-    stop_model, update_llm_models,
+    start_inference, stop_download, stop_inference, stop_model,
+    update_llm_models,
 };
 mod services;
 mod utils;
@@ -24,10 +24,10 @@ pub struct DownloadState {
     abort_handlers: Mutex<Option<tauri::async_runtime::JoinHandle<()>>>,
 }
 
-#[derive(Default)]
-pub struct Channel {
-    pub tx: Mutex<Option<Sender<String>>>,
-}
+// #[derive(Default)]
+// pub struct Channel {
+//     pub tx: Mutex<Option<Sender<String>>>,
+// }
 
 fn main() {
     tauri::Builder::default()
@@ -36,7 +36,6 @@ fn main() {
             load_model,
             stop_model,
             start_inference,
-            send_message_v2,
             download_model,
             stop_download,
             stop_inference,
@@ -58,7 +57,7 @@ fn main() {
 
             app.manage(LLMState::default());
             app.manage(DownloadState::default());
-            app.manage(Channel::default());
+            // app.manage(Channel::default());
 
             Ok(())
         })

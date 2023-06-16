@@ -7,7 +7,7 @@ use crate::app_event;
 use crate::services::downloader::download;
 // use crate::services::llm_chain::LLM;
 use crate::utils::events::*;
-use crate::Channel;
+// use crate::Channel;
 
 #[tauri::command]
 pub fn update_llm_models(app_handle: tauri::AppHandle, window: tauri::Window) {
@@ -251,29 +251,29 @@ pub fn stop_inference(llm_state: tauri::State<crate::LLMState>) {
 //     }
 // }
 
-#[tauri::command]
-pub fn send_message_v2(
-    window: tauri::Window,
-    state: tauri::State<Channel>,
-    message: String,
-) {
-    let tx_guard = &*state.tx.lock().unwrap();
+// #[tauri::command]
+// pub fn send_message_v2(
+//     window: tauri::Window,
+//     state: tauri::State<Channel>,
+//     message: String,
+// ) {
+//     let tx_guard = &*state.tx.lock().unwrap();
 
-    if let Some(tx) = tx_guard {
-        let tmp_tx = tx.clone();
-        tauri::async_runtime::spawn(async move {
-            if tmp_tx.send(message).await.is_err() {
-                println!("send message block..")
-            }
-        });
-    } else {
-        let notification_payload = NoticificationPayload {
-            message: String::from("Wake Lobot up first..."),
-        };
+//     if let Some(tx) = tx_guard {
+//         let tmp_tx = tx.clone();
+//         tauri::async_runtime::spawn(async move {
+//             if tmp_tx.send(message).await.is_err() {
+//                 println!("send message block..")
+//             }
+//         });
+//     } else {
+//         let notification_payload = NoticificationPayload {
+//             message: String::from("Wake Lobot up first..."),
+//         };
 
-        AppEvent::<Noticification>::new(notification_payload).emit(&window);
-    };
-}
+//         AppEvent::<Noticification>::new(notification_payload).emit(&window);
+//     };
+// }
 
 #[tauri::command]
 pub fn open_model_folder(path: String) {
