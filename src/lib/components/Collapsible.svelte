@@ -98,23 +98,26 @@ async function deleteModel(e: MouseEvent) {
           </div>
           <div class="col-span-1">
             {#if title == 'Local Models'}
-              <Button
-                variant="ghost"
-                size="sm"
-                class="px-1 group"
-                id="{modelName}"
-                on:click="{(e) => loadModel(e)}">
-                <Play class="h-4 w-4 pointer-events-none" />
-                <span class="sr-only pointer-events-none">Start</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                class="px-1 group"
-                on:click="{stopModel}">
-                <StopCircle class="h-4 w-4 pointer-events-none" />
-                <span class="sr-only pointer-events-none">Stop</span>
-              </Button>
+              {#if $LLMState.runnningModel}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="px-1 group"
+                  on:click="{stopModel}">
+                  <StopCircle class="h-4 w-4 pointer-events-none" />
+                  <span class="sr-only pointer-events-none">Stop</span>
+                </Button>
+              {:else}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="px-1 group"
+                  id="{modelName}"
+                  on:click="{(e) => loadModel(e)}">
+                  <Play class="h-4 w-4 pointer-events-none" />
+                  <span class="sr-only pointer-events-none">Start</span>
+                </Button>
+              {/if}
               <Button
                 variant="ghost"
                 size="sm"
@@ -125,23 +128,26 @@ async function deleteModel(e: MouseEvent) {
                 <span class="sr-only pointer-events-none">Delete</span>
               </Button>
             {:else}
-              <Button
-                variant="ghost"
-                size="sm"
-                class="px-1 group"
-                id="{modelName}"
-                on:click="{(e) => download(e)}">
-                <ArrowDownToLine class="h-4 w-4 pointer-events-none" />
-                <span class="sr-only pointer-events-none">Download</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                class="px-1 group"
-                on:click="{stopDownload}">
-                <Pause class="h-4 w-4 pointer-events-none" />
-                <span class="sr-only pointer-events-none">Pause</span>
-              </Button>
+              {#if $DownloadState.currentDownload}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="px-1 group"
+                  on:click="{stopDownload}">
+                  <Pause class="h-4 w-4 pointer-events-none" />
+                  <span class="sr-only pointer-events-none">Pause</span>
+                </Button>
+              {:else}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="px-1 group"
+                  id="{modelName}"
+                  on:click="{(e) => download(e)}">
+                  <ArrowDownToLine class="h-4 w-4 pointer-events-none" />
+                  <span class="sr-only pointer-events-none">Download</span>
+                </Button>
+              {/if}
               <Button
                 variant="ghost"
                 size="sm"
@@ -159,7 +165,7 @@ async function deleteModel(e: MouseEvent) {
             {#if $DownloadState.currentDownload == modelName}
               <Progress class=" col-span-9" value="{$DownloadState.progress}" />
               <span class="col-span-1"
-                >{($DownloadState.progress * 1.0).toFixed(2)}%</span>
+                >{$DownloadState.progress.toFixed(2)}%</span>
             {:else}
               <!-- <Progress
                 class=" col-span-9"

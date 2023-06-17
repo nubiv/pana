@@ -43,9 +43,6 @@ async function stopGenerating() {
         </div>
       </div>
     {/if}
-    <!-- <p>
-      {$output}
-    </p> -->
   </CardContent>
   {#if $StreamState.isStreaming}
     <Button

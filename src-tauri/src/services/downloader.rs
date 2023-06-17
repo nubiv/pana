@@ -69,9 +69,9 @@ pub async fn download(
 
                 progress += chunk.len() as f64;
 
-                let percentage = format!("{:.2}", progress / length * 100.0);
+                let percentage = progress / length * 100.0;
 
-                crate::app_event!(
+                app_event!(
                     window,
                     Download,
                     DownloadPayload {

@@ -1,12 +1,8 @@
 <script lang="ts">
 import { Button } from '$components/ui/button'
-import { Label } from '$components/ui/label'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
-  SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger

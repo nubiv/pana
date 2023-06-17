@@ -1,27 +1,18 @@
-use std::sync::Arc;
-
-use llm_chain::output::StreamExt;
-use tokio::sync::mpsc;
-
 use crate::app_event;
 use crate::services::downloader::download;
-// use crate::services::llm_chain::LLM;
+use crate::services::llm::set_model;
 use crate::utils::events::*;
-// use crate::Channel;
+use crate::utils::models::{get_model_info, read_model_list};
 
 #[tauri::command]
 pub fn update_llm_models(app_handle: tauri::AppHandle, window: tauri::Window) {
-    use crate::utils::models::{read_model_list, ModelPayloadInfo};
-
-    let (tx, mut rx) = tokio::sync::mpsc::channel::<ModelPayloadInfo>(10);
+    let (tx, mut rx) = tokio::sync::mpsc::channel::<ModelPayload>(10);
 
     read_model_list(&app_handle, tx);
 
     tauri::async_runtime::spawn(async move {
         while let Some(model_payload_info) = rx.recv().await {
-            window
-                .emit("model", model_payload_info)
-                .expect("failed to emit");
+            app_event!(&window, Model, model_payload_info);
         }
     });
 }
@@ -96,10 +87,8 @@ pub fn load_model(
     app_handle: tauri::AppHandle,
     model_name: String,
 ) {
-    use crate::utils::models::get_model_info;
-
     let model_info = get_model_info(&app_handle, &model_name);
-    crate::services::llm::set_model(llm_state, &app_handle, &model_info);
+    set_model(llm_state, &app_handle, &model_info);
 }
 
 #[tauri::command]
@@ -131,7 +120,8 @@ pub fn start_inference(
             Some(model) => model,
             None => panic!("model is not loaded"),
         };
-        let mut session = crate::services::llm::new_session(model, &message);
+        let mut session =
+            crate::services::llm::new_session(model.as_ref(), &message);
 
         let mut utf8_buf = llm::TokenUtf8Buffer::new();
 
@@ -183,103 +173,8 @@ pub fn stop_inference(llm_state: tauri::State<crate::LLMState>) {
     }
 }
 
-// #[tauri::command]
-// pub fn load_model_v2(
-//     app_handle: tauri::AppHandle,
-//     window: tauri::Window,
-//     state: tauri::State<Channel>,
-// ) {
-//     let (tx, mut rx) = mpsc::channel(10);
-//     let tx_guard = &mut *state.tx.lock().unwrap();
-
-//     match tx_guard {
-//         Some(_) => {
-//             let notification_payload = NoticificationPayload {
-//                 message: String::from("Lobot has been running already..."),
-//             };
-
-//             AppEvent::<Noticification>::new(notification_payload).emit(&window);
-//         }
-//         None => {
-//             *tx_guard = Some(tx);
-
-//             tauri::async_runtime::spawn(async move {
-//                 let mut llm = match LLM::spawn_llama(&app_handle) {
-//                     Ok(llm) => llm,
-//                     Err(e) => {
-//                         panic!("spawn llama failed {}", e);
-//                     }
-//                 };
-
-//                 let notification_payload = NoticificationPayload {
-//                     message: String::from("Lobot activated..."),
-//                 };
-
-//                 AppEvent::<Noticification>::new(notification_payload)
-//                     .emit(&window);
-
-//                 loop {
-//                     match rx.recv().await {
-//                         Some(input) => match llm.feed_input(&input).await {
-//                             Ok(mut res) => {
-//                                 while let Some(token) = res.next().await {
-//                                     let response_payload = ResponsePayload {
-//                                         is_streaming: true,
-//                                         token: token.to_string(),
-//                                     };
-
-//                                     AppEvent::<Response>::new(response_payload)
-//                                         .emit(&window);
-//                                 }
-
-//                                 // let response_payload = ResponsePayload {
-//                                 //     message: res.to_string(),
-//                                 // };
-
-//                                 // AppEvent::<Response>::new(response_payload)
-//                                 //     .emit(&window);
-//                             }
-//                             Err(e) => {
-//                                 println!("run llama block {}", e)
-//                             }
-//                         },
-//                         None => println!("the sender dropped"),
-//                     }
-//                 }
-//             });
-//         }
-//     }
-// }
-
-// #[tauri::command]
-// pub fn send_message_v2(
-//     window: tauri::Window,
-//     state: tauri::State<Channel>,
-//     message: String,
-// ) {
-//     let tx_guard = &*state.tx.lock().unwrap();
-
-//     if let Some(tx) = tx_guard {
-//         let tmp_tx = tx.clone();
-//         tauri::async_runtime::spawn(async move {
-//             if tmp_tx.send(message).await.is_err() {
-//                 println!("send message block..")
-//             }
-//         });
-//     } else {
-//         let notification_payload = NoticificationPayload {
-//             message: String::from("Wake Lobot up first..."),
-//         };
-
-//         AppEvent::<Noticification>::new(notification_payload).emit(&window);
-//     };
-// }
-
 #[tauri::command]
 pub fn open_model_folder(path: String) {
-    use std::fs;
-    use std::fs::metadata;
-    use std::path::PathBuf;
     use std::process::Command;
 
     #[cfg(target_os = "windows")]
@@ -294,10 +189,10 @@ pub fn open_model_folder(path: String) {
     {
         if path.contains(",") {
             // see https://gitlab.freedesktop.org/dbus/dbus/-/issues/76
-            let new_path = match metadata(&path).unwrap().is_dir() {
+            let new_path = match std::fs::metadata(&path).unwrap().is_dir() {
                 true => path,
                 false => {
-                    let mut path2 = PathBuf::from(path);
+                    let mut path2 = std::path::PathBuf::from(path);
                     path2.pop();
                     path2.into_os_string().into_string().unwrap()
                 }

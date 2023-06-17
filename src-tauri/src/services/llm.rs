@@ -1,7 +1,4 @@
-use std::{
-    str::FromStr,
-    sync::{Arc, Mutex},
-};
+use std::str::FromStr;
 
 pub fn set_model(
     llm_state: tauri::State<crate::LLMState>,
@@ -36,7 +33,7 @@ pub fn set_model(
 }
 
 pub fn new_session(
-    model: &Box<dyn llm::Model>,
+    model: &dyn llm::Model,
     message: &str,
 ) -> llm::InferenceSession {
     let character_name = "### Assistant";
@@ -54,7 +51,7 @@ pub fn new_session(
 
     session
         .feed_prompt::<std::convert::Infallible, llm::Prompt>(
-            model.as_ref(),
+            model,
             &llm::InferenceParameters::default(),
             llm::Prompt::Text(format!("{}\n{}", persona, new_message).as_str()),
             &mut Default::default(),

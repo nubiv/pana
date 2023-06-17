@@ -36,7 +36,7 @@
       ],
       "identifier": "lobot",
       "targets": "all",
-      "resources": ["./models/*"]
+      "resources": ["models/*"]
     },
     "security": {
       "csp": null

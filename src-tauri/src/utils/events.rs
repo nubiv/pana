@@ -32,31 +32,32 @@ impl<'a> EventType<'a> for Download {
 
 pub trait EventPayload {}
 
-#[derive(Clone, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct NoticificationPayload {
     pub message: String,
 }
 impl EventPayload for NoticificationPayload {}
-#[derive(Clone, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct ErrorPayload {
     pub message: String,
 }
 impl EventPayload for ErrorPayload {}
-#[derive(Clone, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct ResponsePayload {
     pub is_streaming: bool,
     pub token: String,
 }
 impl EventPayload for ResponsePayload {}
-#[derive(Clone, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct ModelPayload {
-    pub running_model: String,
-    pub local_models: Vec<std::path::PathBuf>,
+    pub name: String,
+    pub size: u64,
+    pub total_size: u64,
 }
 impl EventPayload for ModelPayload {}
-#[derive(Clone, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct DownloadPayload {
-    pub progress: String,
+    pub progress: f64,
 }
 impl EventPayload for DownloadPayload {}
 
@@ -89,6 +90,11 @@ where
     }
 }
 
+/// Macro to emit an event to the frontend.
+/// *Arguments*:
+/// - `$window`: the reference to the target window.
+/// - `$event`: the event type to emit. Available events are: `Notification`, `Error`, `Response`, `Model`, `Download`.
+/// - `$payload`: the payload to send with the event.
 #[macro_export]
 macro_rules! app_event {
     ($window:expr, $event:ty, $payload:expr) => {

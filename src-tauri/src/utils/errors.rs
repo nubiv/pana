@@ -1,3 +1,4 @@
+// TODO: need to refactor error types
 #[derive(thiserror::Error, Debug)]
 pub enum LLMError {
     #[error("LLM is processing, wait a sec.")]

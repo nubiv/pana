@@ -14,15 +14,23 @@ let unlistenDownload: UnlistenFn
 
 onMount(async () => {
   unlistenNoticification = await listen('notification', (event) => {
-    const res = event.payload as any
+    type TNotificationPayload = {
+      message: string
+    }
 
-    console.log(res)
+    const payload = event.payload as TNotificationPayload
+    console.log('Notification>>>', payload)
   })
 
   unlistenResponse = await listen('response', (event) => {
-    const res = event.payload as any
+    type TResponsePayload = {
+      is_streaming: boolean
+      token: string
+    }
 
-    if (res.is_streaming === true && !$StreamState.isStreaming) {
+    const payload = event.payload as TResponsePayload
+
+    if (payload.is_streaming === true && !$StreamState.isStreaming) {
       StreamState.update((prev) => {
         return {
           ...prev,
@@ -31,7 +39,7 @@ onMount(async () => {
       })
     }
 
-    if (res.token === '<|im_end|>') {
+    if (payload.token === '<|im_end|>') {
       HistoryState.update((prev) => {
         const newMessage: TMessage = {
           text: $StreamState.tokens,
@@ -51,21 +59,27 @@ onMount(async () => {
       StreamState.update((prev) => {
         return {
           ...prev,
-          tokens: prev.tokens.concat(res.token)
+          tokens: prev.tokens.concat(payload.token)
         }
       })
     }
   })
 
   unlistenDownload = await listen('download', (event) => {
+    type TDownloadPayload = {
+      progress: number
+    }
+
+    let payload = event.payload as any
+
     DownloadState.update((prev) => {
       return {
         ...prev,
-        progress: (event.payload as any).progress
+        progress: payload.progress
       }
     })
 
-    if ((event.payload as any).progress === '100.00') {
+    if (payload.progress === '100.00') {
       DownloadState.update((prev) => {
         return {
           ...prev,
@@ -79,11 +93,22 @@ onMount(async () => {
   })
 
   unlistenError = await listen('error', (event) => {
-    console.log('error>>>', event)
+    type TErrorPayload = {
+      message: string
+    }
+
+    let payload = event.payload as TErrorPayload
+    console.log('Error>>>', payload)
   })
 
   unlistenModel = await listen('model', (event) => {
-    const { name, size, total_size } = event.payload as any
+    type TModelPayload = {
+      name: string
+      size: number
+      total_size: number
+    }
+
+    const { name, size, total_size } = event.payload as TModelPayload
 
     if (size === total_size) {
       LLMState.update((prev) => {
