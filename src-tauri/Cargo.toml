@@ -17,7 +17,7 @@ tauri = { version = "1.3", features = ["dialog-all", "macos-private-api", "path-
 window-vibrancy = "0.3.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-llm = { git = "https://github.com/rustformers/llm.git"}
+llm = { git = "https://github.com/rustformers/llm"}
 # llm-chain-llama = { git = "https://github.com/sobelio/llm-chain"}
 llm-chain = { git = "https://github.com/sobelio/llm-chain"}
 tokio = { version = "1.28.2", features = ["full"] }
