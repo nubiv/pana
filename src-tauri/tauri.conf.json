@@ -34,7 +34,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "lobot",
+      "identifier": "pana.dev",
       "targets": "all",
       "resources": ["models/*"]
     },
@@ -48,7 +48,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "lobot",
+        "title": "Pana",
         "width": 800,
         "height": 600,
         "transparent": true

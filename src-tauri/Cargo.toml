@@ -1,10 +1,10 @@
 [package]
-name = "lobot"
+name = "Pana"
 version = "0.0.0"
-description = "lobot"
+description = "Pana"
 authors = ["horus"]
 license = "MIT"
-repository = "https://github.com/nubiv/lobot"
+repository = "https://github.com/nubiv/pana"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

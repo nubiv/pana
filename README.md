@@ -1,4 +1,4 @@
-# Lobot 🤖
+# Pana 🤖
 
 <!-- [![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/Ryc9Cbws) -->
 
@@ -69,7 +69,7 @@ Contributions are always welcome! Please submit a pull request if you'd like to 
 
 ## License
 
-`Lobot` is licensed under the [MIT License](LICENSE.md).
+`Pana` is licensed under the [MIT License](LICENSE.md).
 
 <!-- ## Connect
 

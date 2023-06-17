@@ -3,6 +3,25 @@
 version = 3
 
 [[package]]
+name = "Pana"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "futures-util",
+ "llm",
+ "llm-chain",
+ "rand 0.8.5",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "thiserror",
+ "tokio",
+ "window-vibrancy",
+]
+
+[[package]]
 name = "adler"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2160,25 +2179,6 @@ source = "git+https://github.com/rustformers/llm.git#e011ce8f8a53b4fe55cc030b216
 dependencies = [
  "bytemuck",
  "llm-base",
-]
-
-[[package]]
-name = "lobot"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "futures-util",
- "llm",
- "llm-chain",
- "rand 0.8.5",
- "reqwest",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "thiserror",
- "tokio",
- "window-vibrancy",
 ]
 
 [[package]]
