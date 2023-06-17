@@ -5,6 +5,8 @@ import { onDestroy, onMount } from 'svelte'
 import { LLMState } from '$lib/store/llm'
 import { HistoryState, StreamState, type TMessage } from '$lib/store/history'
 import { DownloadState } from '$lib/store/download'
+import Toast from '$lib/components/Toast.svelte'
+import { toasts } from '$lib/store/toasts'
 
 let unlistenModel: UnlistenFn
 let unlistenNoticification: UnlistenFn
@@ -19,7 +21,7 @@ onMount(async () => {
     }
 
     const payload = event.payload as TNotificationPayload
-    console.log('Notification>>>', payload)
+    toasts.notifications(payload.message)
   })
 
   unlistenResponse = await listen('response', (event) => {
@@ -43,7 +45,7 @@ onMount(async () => {
       HistoryState.update((prev) => {
         const newMessage: TMessage = {
           text: $StreamState.tokens,
-          role: 'Lobot'
+          role: 'Pana'
         }
         return [...prev, newMessage]
       })
@@ -70,7 +72,7 @@ onMount(async () => {
       progress: number
     }
 
-    let payload = event.payload as any
+    let payload = event.payload as TDownloadPayload
 
     DownloadState.update((prev) => {
       return {
@@ -79,7 +81,7 @@ onMount(async () => {
       }
     })
 
-    if (payload.progress === '100.00') {
+    if (payload.progress.toFixed(2) === '100.00') {
       DownloadState.update((prev) => {
         return {
           ...prev,
@@ -98,7 +100,7 @@ onMount(async () => {
     }
 
     let payload = event.payload as TErrorPayload
-    console.log('Error>>>', payload)
+    toasts.error(payload.message)
   })
 
   unlistenModel = await listen('model', (event) => {
@@ -154,3 +156,4 @@ onDestroy(() => {
 </script>
 
 <slot />
+<Toast />

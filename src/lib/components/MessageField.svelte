@@ -5,23 +5,24 @@ import { LLMState } from '../store/llm'
 import { Input } from '$components/ui/input'
 import { Button } from '$components/ui/button'
 import { CornerDownLeft } from 'lucide-svelte'
+import { toasts } from '$lib/store/toasts'
 
 let message: string
 
 async function sendMessage() {
   if (!message) {
-    alert('Message is empty...')
+    toasts.error('Message is empty...')
     return
   }
 
   if (!$LLMState.runnningModel) {
-    alert('Loading model required...')
+    toasts.error('Loading model required...')
     message = ''
     return
   }
 
   if ($StreamState.isStreaming) {
-    alert('Wait a sec...')
+    toasts.error('Wait a sec...')
     message = ''
     return
   }

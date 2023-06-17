@@ -3,25 +3,6 @@
 version = 3
 
 [[package]]
-name = "Pana"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "futures-util",
- "llm",
- "llm-chain",
- "rand 0.8.5",
- "reqwest",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "thiserror",
- "tokio",
- "window-vibrancy",
-]
-
-[[package]]
 name = "adler"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2630,6 +2611,25 @@ name = "overload"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
+
+[[package]]
+name = "pana"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "futures-util",
+ "llm",
+ "llm-chain",
+ "rand 0.8.5",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "thiserror",
+ "tokio",
+ "window-vibrancy",
+]
 
 [[package]]
 name = "pango"

@@ -69,7 +69,7 @@ pub async fn download(
 
                 progress += chunk.len() as f64;
 
-                let percentage = progress / length * 100.0;
+                let percentage = progress / length * 100.00;
 
                 app_event!(
                     window,

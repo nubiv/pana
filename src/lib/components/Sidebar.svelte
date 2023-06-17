@@ -13,6 +13,7 @@ import Collapsible from './Collapsible.svelte'
 import { LLMState } from '$lib/store/llm'
 import { resolveResource } from '@tauri-apps/api/path'
 import { invoke } from '@tauri-apps/api/tauri'
+import DeleteDialog from './DeleteDialog.svelte'
 
 async function openModelFolder() {
   const path = await resolveResource('models')
@@ -40,7 +41,9 @@ async function openModelFolder() {
     <Collapsible
       title="Other Available Models"
       list="{$LLMState.otherModels}" />
-    <Button class="mt-4 mr-7 float-right" on:click="{openModelFolder}"
-      >View models</Button>
+    <Button
+      variant="outline"
+      class="mt-4 mr-7 float-right"
+      on:click="{openModelFolder}">View models</Button>
   </SheetContent>
 </Sheet>

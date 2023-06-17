@@ -3,7 +3,6 @@ import {
   ChevronDown,
   Play,
   StopCircle,
-  Trash2,
   ArrowDownToLine,
   Pause
 } from 'lucide-svelte'
@@ -17,6 +16,8 @@ import Progress from './ui/progress/Progress.svelte'
 import { invoke } from '@tauri-apps/api/tauri'
 import { DownloadState } from '$lib/store/download'
 import { LLMState, type TModel } from '$lib/store/llm'
+import DeleteDialog from './DeleteDialog.svelte'
+import { toasts } from '$lib/store/toasts'
 
 let isOpen = false
 export let list: Record<string, TModel>
@@ -68,6 +69,17 @@ async function stopModel() {
 
 async function deleteModel(e: MouseEvent) {
   const modelName = (e.target as HTMLButtonElement).id
+
+  if ($DownloadState.currentDownload === modelName) {
+    toasts.error('Need to stop download first...')
+    return
+  }
+
+  if ($LLMState.runnningModel === modelName) {
+    toasts.error('Stop running model first...')
+    return
+  }
+
   await invoke('delete_model', { modelName })
 
   await invoke('update_llm_models')
@@ -118,7 +130,8 @@ async function deleteModel(e: MouseEvent) {
                   <span class="sr-only pointer-events-none">Start</span>
                 </Button>
               {/if}
-              <Button
+              <DeleteDialog modelName="{modelName}" />
+              <!-- <Button
                 variant="ghost"
                 size="sm"
                 class="px-1 group"
@@ -126,7 +139,7 @@ async function deleteModel(e: MouseEvent) {
                 on:click="{(e) => deleteModel(e)}">
                 <Trash2 class="h-4 w-4 pointer-events-none" />
                 <span class="sr-only pointer-events-none">Delete</span>
-              </Button>
+              </Button> -->
             {:else}
               {#if $DownloadState.currentDownload}
                 <Button
@@ -148,7 +161,8 @@ async function deleteModel(e: MouseEvent) {
                   <span class="sr-only pointer-events-none">Download</span>
                 </Button>
               {/if}
-              <Button
+              <DeleteDialog modelName="{modelName}" />
+              <!-- <Button
                 variant="ghost"
                 size="sm"
                 class="px-1 group"
@@ -156,7 +170,7 @@ async function deleteModel(e: MouseEvent) {
                 on:click="{(e) => deleteModel(e)}">
                 <Trash2 class="h-4 w-4 pointer-events-none" />
                 <span class="sr-only pointer-events-none">Delete</span>
-              </Button>
+              </Button> -->
             {/if}
           </div>
         </div>
