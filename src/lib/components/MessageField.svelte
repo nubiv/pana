@@ -16,22 +16,20 @@ async function sendMessage() {
   }
 
   if (!$LLMState.runnningModel) {
-    toasts.error('Loading model required...')
+    toasts.error('Activate model first...')
     message = ''
     return
   }
 
   if ($StreamState.isStreaming) {
-    toasts.error('Wait a sec...')
+    toasts.error('Still processing wait a sec...')
     message = ''
     return
   }
 
   await invoke('start_inference', { message: message })
-  HistoryState.update((prev) => {
-    const myMessage: TMessage = { text: message, role: 'Me' }
-    return [...prev, myMessage]
-  })
+  const myMessage: TMessage = { text: message, role: 'Me' }
+  HistoryState.addMessage(myMessage)
 
   message = ''
 }

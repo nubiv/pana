@@ -1,5 +1,7 @@
+use anyhow::anyhow;
 use std::fs;
 
+use crate::app_event;
 use crate::utils::errors::AppError;
 use crate::utils::events::*;
 
@@ -18,6 +20,7 @@ pub struct ModelList {
 
 pub fn read_model_list(
     app_handle: &tauri::AppHandle,
+    window: &tauri::Window,
     tx: tokio::sync::mpsc::Sender<ModelPayload>,
 ) {
     let model_config_path = app_handle
@@ -34,10 +37,17 @@ pub fn read_model_list(
     match fs::read_dir(&bin_path) {
         Ok(_) => {}
         Err(_) => {
-            println!("bin dir not existed creating...");
-
             if let Err(e) = fs::create_dir(&bin_path) {
                 println!("failed to create bin dir: {}", e);
+
+                app_event!(
+                    window,
+                    Error,
+                    ErrorPayload {
+                        message: String::from("Failed to create bin folder.")
+                    }
+                );
+
                 return;
             }
         }
@@ -94,8 +104,34 @@ pub fn get_model_info(
     target_model.to_owned()
 }
 
-pub fn delete_model(model_path: &std::path::Path) -> Result<(), AppError> {
-    fs::remove_file(model_path).expect("failed to delete model file");
+pub fn delete_model(
+    window: &tauri::Window,
+    model_path: &std::path::Path,
+) -> Result<(), AppError> {
+    match fs::remove_file(model_path) {
+        Ok(_) => {
+            app_event!(
+                window,
+                Noticification,
+                NoticificationPayload {
+                    message: String::from("Model deleted.")
+                }
+            );
 
-    Ok(())
+            Ok(())
+        }
+        Err(e) => {
+            println!("{}", e);
+
+            app_event!(
+                window,
+                Error,
+                ErrorPayload {
+                    message: String::from("Failed to delete model.")
+                }
+            );
+
+            Err(AppError::Custom(anyhow!("Failed to delete model.")))
+        }
+    }
 }

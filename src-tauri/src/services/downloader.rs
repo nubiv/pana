@@ -1,4 +1,3 @@
-use anyhow::anyhow;
 use futures_util::TryStreamExt;
 use tokio::io::AsyncWriteExt;
 
@@ -13,7 +12,7 @@ pub async fn download(
 ) -> Result<(), DownloadError> {
     let model_filename = bin_path.join(&model_info.filename);
 
-    let portion = match tokio::fs::File::open(&model_filename).await {
+    let chunk_in_place = match tokio::fs::File::open(&model_filename).await {
         Ok(file) => {
             let metadata = file.metadata().await.unwrap();
 
@@ -29,7 +28,7 @@ pub async fn download(
     let client = reqwest::Client::new();
     let res = client
         .get(&model_info.download_url)
-        .header("Range", format!("bytes={}-", &portion))
+        .header("Range", format!("bytes={}-", &chunk_in_place))
         .send()
         .await;
 
@@ -41,46 +40,56 @@ pub async fn download(
         .open(&model_filename)
         .await?;
 
-    let length = client
-        .get(&model_info.download_url)
-        .send()
-        .await
-        .map_err(|e| {
-            DownloadError::Custom(anyhow!(
-                "failed to get content length. {}",
-                e
-            ))
-        })?
-        .content_length()
-        .unwrap() as f64;
-
     match res {
         Ok(res) => {
-            println!("download started.");
-
             let mut stream = res.bytes_stream();
 
-            let mut progress = portion as f64;
+            let mut size = chunk_in_place;
 
             while let Some(chunk) = stream.try_next().await? {
                 if let Err(e) = model.write_all(&chunk).await {
                     println!("error out {}", e);
                 };
 
-                progress += chunk.len() as f64;
+                size += chunk.len() as u64;
 
-                let percentage = progress / length * 100.00;
-
-                app_event!(
-                    window,
-                    Download,
-                    DownloadPayload {
-                        progress: percentage
-                    }
-                );
+                app_event!(window, Download, DownloadPayload { size });
             }
 
+            // while stream.try_next().await.is_ok() {
+            //     while let Some(chunk) = chunk_option.take() {
+            //         if let Err(e) = model.write_all(&chunk).await {
+            //             println!("error out {}", e);
+
+            //             app_event!(
+            //                     window,
+            //                     Error,
+            //                     ErrorPayload {
+            //                         message: String::from(
+            //                             "Something went wrong while downloading, please try again."
+            //                         )
+            //                     }
+            //                 );
+
+            //             return Ok(());
+            //         };
+
+            //         size += chunk.len() as u64;
+
+            //         app_event!(window, Download, DownloadPayload { size });
+            //     }
+            // } else {
+
+            // };
+
             println!("download completed.");
+            app_event!(
+                window,
+                Noticification,
+                NoticificationPayload {
+                    message: String::from("Download completed.")
+                }
+            );
 
             Ok(())
         }

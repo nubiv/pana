@@ -57,7 +57,7 @@ pub struct ModelPayload {
 impl EventPayload for ModelPayload {}
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct DownloadPayload {
-    pub progress: f64,
+    pub size: u64,
 }
 impl EventPayload for DownloadPayload {}
 

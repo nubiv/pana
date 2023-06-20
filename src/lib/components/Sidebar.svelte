@@ -10,7 +10,7 @@ import {
 import { Settings } from 'lucide-svelte'
 import Toggle from './ui/toggle/Toggle.svelte'
 import Collapsible from './Collapsible.svelte'
-import { LLMState } from '$lib/store/llm'
+import { LLMState, LocalModels, OtherModels, type TModel } from '$lib/store/llm'
 import { resolveResource } from '@tauri-apps/api/path'
 import { invoke } from '@tauri-apps/api/tauri'
 import DeleteDialog from './DeleteDialog.svelte'
@@ -37,10 +37,8 @@ async function openModelFolder() {
         {$LLMState.runnningModel ? $LLMState.runnningModel : 'None'}
       </span>
     </div>
-    <Collapsible title="Local Models" list="{$LLMState.localModels}" />
-    <Collapsible
-      title="Other Available Models"
-      list="{$LLMState.otherModels}" />
+    <Collapsible title="Local Models" list="{$LocalModels}" />
+    <Collapsible title="Other Available Models" list="{$OtherModels}" />
     <Button
       variant="outline"
       class="mt-4 mr-7 float-right"

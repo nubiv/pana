@@ -8,7 +8,7 @@ use crate::utils::models::{get_model_info, read_model_list};
 pub fn update_llm_models(app_handle: tauri::AppHandle, window: tauri::Window) {
     let (tx, mut rx) = tokio::sync::mpsc::channel::<ModelPayload>(10);
 
-    read_model_list(&app_handle, tx);
+    read_model_list(&app_handle, &window, tx);
 
     tauri::async_runtime::spawn(async move {
         while let Some(model_payload_info) = rx.recv().await {
@@ -52,8 +52,6 @@ pub fn download_model(
             .expect("failed to download");
     });
 
-    // put download handle somewhere in case user wants to cancel/pause the download
-    // let mut download_state_guard = &download_state.abort_handle;
     let mut abort_handlers_guard =
         download_state.abort_handlers.lock().unwrap();
     *abort_handlers_guard = Some(download_handle);
@@ -70,7 +68,11 @@ pub fn stop_download(download_state: tauri::State<crate::DownloadState>) {
 }
 
 #[tauri::command]
-pub fn delete_model(app_handle: tauri::AppHandle, model_name: String) {
+pub fn delete_model(
+    app_handle: tauri::AppHandle,
+    window: tauri::Window,
+    model_name: String,
+) {
     use crate::utils::models::{delete_model, get_model_info};
 
     let model_info = get_model_info(&app_handle, &model_name);
@@ -78,7 +80,7 @@ pub fn delete_model(app_handle: tauri::AppHandle, model_name: String) {
         .path_resolver()
         .resolve_resource(format!("./models/bin/{}", model_info.filename))
         .expect("failed to resolve resource");
-    delete_model(&model_path).expect("failed to delete model");
+    delete_model(&window, &model_path).expect("failed to delete model");
 }
 
 #[tauri::command]

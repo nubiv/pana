@@ -24,66 +24,64 @@ export let list: Record<string, TModel>
 export let title: string
 
 async function download(e: MouseEvent) {
+  if ($DownloadState.currentDownload) {
+    toasts.error('Currently only one download is supported.')
+    return
+  }
+
   const modelName = (e.target as HTMLButtonElement).id
   await invoke('download_model', { modelName })
 
-  let modelInfo = list[modelName]
-  let size = modelInfo.size
-  let total_size = modelInfo.totalSize
+  const modelInfo = list[modelName]
+  const { size, totalSize } = modelInfo
+  const progress = ((size / totalSize) * 100.0).toFixed(2)
 
-  DownloadState.update((prev) => {
-    return {
-      ...prev,
-      currentDownload: modelName,
-      progress: (size / total_size) * 100.0
-    }
-  })
+  DownloadState.startDownload(modelName, progress, totalSize)
 }
 
 async function stopDownload() {
   await invoke('stop_download')
 
-  DownloadState.update((prev) => {
-    return { ...prev, currentDownload: null, progress: 0 }
-  })
+  DownloadState.stopDownload()
 
   await invoke('update_llm_models')
 }
 
 async function loadModel(e: MouseEvent) {
+  if ($LLMState.runnningModel) {
+    toasts.error('Only one model can be run.')
+    return
+  }
+
   const modelName = (e.target as HTMLButtonElement).id
   await invoke('load_model', { modelName })
 
-  LLMState.update((prev) => {
-    return { ...prev, runnningModel: modelName }
-  })
+  LLMState.updateRunningModel(modelName)
 }
 
 async function stopModel() {
   await invoke('stop_model')
 
-  LLMState.update((prev) => {
-    return { ...prev, runnningModel: null }
-  })
+  LLMState.stopRunningModel()
 }
 
-async function deleteModel(e: MouseEvent) {
-  const modelName = (e.target as HTMLButtonElement).id
+// async function deleteModel(e: MouseEvent) {
+//   const modelName = (e.target as HTMLButtonElement).id
 
-  if ($DownloadState.currentDownload === modelName) {
-    toasts.error('Need to stop download first...')
-    return
-  }
+//   if ($DownloadState.currentDownload === modelName) {
+//     toasts.error('Stop downloading first...')
+//     return
+//   }
 
-  if ($LLMState.runnningModel === modelName) {
-    toasts.error('Stop running model first...')
-    return
-  }
+//   if ($LLMState.runnningModel === modelName) {
+//     toasts.error('Stop running it first...')
+//     return
+//   }
 
-  await invoke('delete_model', { modelName })
+//   await invoke('delete_model', { modelName })
 
-  await invoke('update_llm_models')
-}
+//   await invoke('update_llm_models')
+// }
 </script>
 
 <Collapsible open="{isOpen}" class="w-auto space-y-2 pt-5">
@@ -110,7 +108,7 @@ async function deleteModel(e: MouseEvent) {
           </div>
           <div class="col-span-1">
             {#if title == 'Local Models'}
-              {#if $LLMState.runnningModel}
+              {#if $LLMState.runnningModel === modelName}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -141,7 +139,7 @@ async function deleteModel(e: MouseEvent) {
                 <span class="sr-only pointer-events-none">Delete</span>
               </Button> -->
             {:else}
-              {#if $DownloadState.currentDownload}
+              {#if $DownloadState.currentDownload === modelName}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -177,9 +175,10 @@ async function deleteModel(e: MouseEvent) {
         {#if title != 'Local Models'}
           <div class="grid grid-cols-10 gap-1">
             {#if $DownloadState.currentDownload == modelName}
-              <Progress class=" col-span-9" value="{$DownloadState.progress}" />
-              <span class="col-span-1"
-                >{$DownloadState.progress.toFixed(2)}%</span>
+              <Progress
+                class=" col-span-9"
+                value="{Number($DownloadState.progress)}" />
+              <span class="col-span-1">{$DownloadState.progress}%</span>
             {:else}
               <!-- <Progress
                 class=" col-span-9"

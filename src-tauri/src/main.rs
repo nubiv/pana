@@ -44,9 +44,10 @@ fn main() {
             window_vibrancy::apply_vibrancy(&window, window_vibrancy::NSVisualEffectMaterial::HudWindow, None, None)
               .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
 
-            #[cfg(target_os = "windows")]
-            window_vibrancy::apply_blur(&window, Some((18, 18, 18, 125)))
-              .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
+            // vibrancy would cause some issues while dragging the window on Windows
+            // #[cfg(target_os = "windows")]
+            // window_vibrancy::apply_blur(&window, Some((18, 18, 18, 125)))
+            //   .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
 
             app.manage(LLMState::default());
             app.manage(DownloadState::default());
