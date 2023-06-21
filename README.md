@@ -1,4 +1,7 @@
-# Pana 🤖
+<h1 align="center">
+Pana 
+<img height="25" src="public/app-icon.png">
+</h1>
 
 <!-- [![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/Ryc9Cbws) -->
 
@@ -7,15 +10,26 @@
 ![macOS](https://img.shields.io/badge/mac%20os-000000?style=for-the-badge&logo=macos&logoColor=F0F0F0)
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 
+<p align="center">
 A locally hosted desktop assistant leveraging LLMs, enabling offline question-answering with complete data privacy.
+</p>
 
-> **🔔 Note!!!**  
+> **🔔 Note!!!**
 > This project is currently in its early stages of development.
 
-## Stacks Used
+## Demo
+
+<p align="center">
+  <img width="600" src="public/demo.gif">
+</p>
+
+## TechStacks
 
 - [tauri](https://github.com/tauri-apps/tauri)
+- [llm](https://github.com/rustformers/llm)
+- [llm-chain](https://github.com/sobelio/llm-chain)
 - [svelte-kit](https://github.com/sveltejs/kit)
+- [shadcn-svelte](https://github.com/huntabyte/shadcn-svelte)
 - [tailwindcss](https://github.com/tailwindlabs/tailwindcss)
 
 ## Prerequisites
@@ -40,9 +54,9 @@ Once you have these prerequisites installed, you're ready to start working with 
 
 To start the development server, run `npm run tauri dev`, or `cargo tauri dev` if you have Tauri CLI installed. This will launch the Tauri application and open a development window. Any changes you make to the source code will automatically reload the application.
 
-## Download
+## Release
 
-Not yet.
+Comming soon.
 
 ## Roadmap
 
@@ -58,10 +72,10 @@ Not yet.
 
 - [ ] Interaction with ChatGPT or other models using your own key -->
 
-## Credits
+<!-- ## Credits
 
 - Thanks to the authors of [llm](https://github.com/rustformers/llm) and [llm-chain](https://github.com/sobelio/llm-chain) for the Rust bindings over [Llama.cpp](https://github.com/ggerganov/llama.cpp).
-- Thanks to the authors of [shadcn-svelte](https://github.com/huntabyte/shadcn-svelte) for porting [shadcn-ui](https://github.com/shadcn/ui) to Svelte.
+- Thanks to the authors of [shadcn-svelte](https://github.com/huntabyte/shadcn-svelte) for porting [shadcn-ui](https://github.com/shadcn/ui) to Svelte. -->
 
 ## Contributing
 

@@ -129,7 +129,10 @@ pub fn infer(
             ) {
                 Ok(token) => token,
                 Err(llm::InferenceError::EndOfText) => break,
-                Err(e) => panic!("Failed to infer next token: {}", e),
+                Err(e) => {
+                    println!("Failed to infer next token: {}", e);
+                    break;
+                }
             };
 
             if let Some(token) = utf8_buf.push(&token) {
