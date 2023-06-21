@@ -16,7 +16,7 @@ async function sendMessage() {
   }
 
   if (!$LLMState.runnningModel) {
-    toasts.error('Activate model first...')
+    toasts.error('Load model first...')
     message = ''
     return
   }

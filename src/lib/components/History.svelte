@@ -5,7 +5,7 @@ p {
 </style>
 
 <script lang="ts">
-import { Diamond, Sprout, XSquare, XCircle } from 'lucide-svelte'
+import { Diamond, Sprout, XSquare, XCircle, Loader } from 'lucide-svelte'
 import { Button } from '$components/ui/button'
 import { Card, CardContent } from '$components/ui/card'
 import { HistoryState, StreamState } from '$lib/store/history'
@@ -35,7 +35,7 @@ async function stopGenerating() {
         </div>
       {/if}
     {/each}
-    {#if $StreamState.isStreaming && $StreamState.tokens}
+    {#if $StreamState.isStreaming}
       <div class=" flex w-[60%] items-center space-x-4 mb-3">
         <Diamond size="{12}" />
         <div class="flex-1 space-y-1 border rounded-md p-4">
@@ -49,6 +49,11 @@ async function stopGenerating() {
       class="absolute w-[30%] mx-[33.33%] bottom-2 opacity-20 group"
       on:click="{stopGenerating}">
       <XCircle class="mr-2 h-4 w-4 pointer-events-none" /> Stop generating...
+    </Button>
+  {/if}
+  {#if $StreamState.isFeedingPrompt}
+    <Button class="absolute w-[30%] mx-[33.33%] bottom-2 opacity-20 group">
+      <Loader class="mr-2 h-4 w-4 pointer-events-none" /> Feeding prompt...
     </Button>
   {/if}
 </Card>

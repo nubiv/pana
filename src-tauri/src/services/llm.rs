@@ -86,6 +86,16 @@ pub fn infer(
         let mut stats = llm::InferenceStats::default();
         let start_at = std::time::SystemTime::now();
 
+        app_event!(
+            &window,
+            Response,
+            ResponsePayload {
+                is_streaming: false,
+                is_feeding_prompt: true,
+                token: String::from("")
+            }
+        );
+
         let mut session =
             crate::services::llm::new_session(model.as_ref(), &message);
 
@@ -94,6 +104,7 @@ pub fn infer(
             Response,
             ResponsePayload {
                 is_streaming: true,
+                is_feeding_prompt: false,
                 token: String::from("")
             }
         );
@@ -128,6 +139,7 @@ pub fn infer(
                     Response,
                     ResponsePayload {
                         is_streaming: true,
+                        is_feeding_prompt: false,
                         token
                     }
                 );
@@ -151,6 +163,7 @@ pub fn infer(
             Response,
             ResponsePayload {
                 is_streaming: false,
+                is_feeding_prompt: false,
                 token: String::from("")
             }
         );

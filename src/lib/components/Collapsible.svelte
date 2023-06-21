@@ -59,8 +59,8 @@ async function loadModel(e: MouseEvent) {
   LLMState.updateRunningModel(modelName)
 }
 
-async function stopModel() {
-  await invoke('stop_model')
+async function unloadModel() {
+  await invoke('unload_model')
 
   LLMState.stopRunningModel()
 }
@@ -113,7 +113,7 @@ async function stopModel() {
                   variant="ghost"
                   size="sm"
                   class="px-1 group"
-                  on:click="{stopModel}">
+                  on:click="{unloadModel}">
                   <StopCircle class="h-4 w-4 pointer-events-none" />
                   <span class="sr-only pointer-events-none">Stop</span>
                 </Button>

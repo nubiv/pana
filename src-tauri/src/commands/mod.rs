@@ -103,7 +103,7 @@ pub fn load_model(
 }
 
 #[tauri::command]
-pub fn stop_model(
+pub fn unload_model(
     window: tauri::Window,
     llm_state: tauri::State<crate::LLMState>,
 ) {
@@ -127,15 +127,6 @@ pub fn start_inference(
 ) {
     let model = llm_state.model.clone();
     let abort_handle = llm_state.abort_handle.clone();
-
-    // app_event!(
-    //     &window,
-    //     Response,
-    //     ResponsePayload {
-    //         is_streaming: true,
-    //         token: String::from("")
-    //     }
-    // );
 
     let window = std::sync::Arc::new(window);
     crate::services::llm::infer(window, message, model, abort_handle);

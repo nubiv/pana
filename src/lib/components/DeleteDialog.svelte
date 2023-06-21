@@ -26,7 +26,7 @@ async function deleteModel() {
   }
 
   if ($LLMState.runnningModel === modelName) {
-    toasts.error('Stop running it first...')
+    toasts.error('Unloading model first...')
     return
   }
 

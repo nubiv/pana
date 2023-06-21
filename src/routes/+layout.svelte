@@ -20,6 +20,7 @@ type TNotificationPayload = {
 
 type TResponsePayload = {
   is_streaming: boolean
+  is_feeding_prompt: boolean
   token: string
 }
 
@@ -51,11 +52,17 @@ onMount(async () => {
     (event: Event<TResponsePayload>) => {
       const payload = event.payload
 
-      if (payload.is_streaming === true && !$StreamState.isStreaming) {
+      if (payload.is_streaming && !$StreamState.isStreaming) {
         StreamState.startStream()
+        return
       }
 
-      if (payload.is_streaming === false) {
+      if (payload.is_feeding_prompt) {
+        StreamState.feedPrompt()
+        return
+      }
+
+      if (!payload.is_streaming) {
         StreamState.stopStream()
       } else {
         StreamState.setTokens(payload.token)

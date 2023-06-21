@@ -10,7 +10,7 @@ mod services;
 mod utils;
 use commands::{
     delete_model, download_model, load_model, open_model_folder,
-    start_inference, stop_download, stop_inference, stop_model,
+    start_inference, stop_download, stop_inference, unload_model,
     update_llm_models,
 };
 
@@ -30,7 +30,7 @@ fn main() {
         .invoke_handler(generate_handler![
             update_llm_models,
             load_model,
-            stop_model,
+            unload_model,
             start_inference,
             download_model,
             stop_download,

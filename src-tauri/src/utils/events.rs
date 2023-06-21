@@ -45,6 +45,7 @@ impl EventPayload for ErrorPayload {}
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct ResponsePayload {
     pub is_streaming: bool,
+    pub is_feeding_prompt: bool,
     pub token: String,
 }
 impl EventPayload for ResponsePayload {}

@@ -11,11 +11,13 @@ const initialHistoryState: THistoryState = []
 
 type TStreamState = {
   isStreaming: boolean
+  isFeedingPrompt: boolean
   tokens: string
 }
 
 const initialStreamState: TStreamState = {
   isStreaming: false,
+  isFeedingPrompt: false,
   tokens: ''
 }
 
@@ -39,10 +41,20 @@ export const HistoryState = createHistoryStore()
 const createStreamStore = () => {
   const { subscribe, update } = writable(initialStreamState)
 
+  const feedPrompt = () => {
+    update((prev) => {
+      return {
+        ...prev,
+        isFeedingPrompt: true
+      }
+    })
+  }
+
   const startStream = () => {
     update((prev) => {
       return {
         ...prev,
+        isFeedingPrompt: false,
         isStreaming: true
       }
     })
@@ -76,6 +88,7 @@ const createStreamStore = () => {
 
   return {
     subscribe,
+    feedPrompt,
     startStream,
     stopStream,
     setTokens
