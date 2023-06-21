@@ -85,18 +85,38 @@ pub fn delete_model(
 
 #[tauri::command]
 pub fn load_model(
-    llm_state: tauri::State<crate::LLMState>,
     app_handle: tauri::AppHandle,
+    window: tauri::Window,
+    llm_state: tauri::State<crate::LLMState>,
     model_name: String,
 ) {
     let model_info = get_model_info(&app_handle, &model_name);
-    set_model(llm_state, &app_handle, &model_info);
+    set_model(&llm_state, &app_handle, &model_info);
+
+    app_event!(
+        &window,
+        Noticification,
+        NoticificationPayload {
+            message: String::from("Model loaded.")
+        }
+    );
 }
 
 #[tauri::command]
-pub fn stop_model(llm_state: tauri::State<crate::LLMState>) {
+pub fn stop_model(
+    window: tauri::Window,
+    llm_state: tauri::State<crate::LLMState>,
+) {
     let mut model_guard = llm_state.model.lock().unwrap();
     *model_guard = None;
+
+    app_event!(
+        &window,
+        Noticification,
+        NoticificationPayload {
+            message: String::from("Model unloaded.")
+        }
+    );
 }
 
 #[tauri::command]
@@ -106,73 +126,43 @@ pub fn start_inference(
     message: String,
 ) {
     let model = llm_state.model.clone();
+    let abort_handle = llm_state.abort_handle.clone();
 
-    app_event!(
-        &window,
-        Response,
-        ResponsePayload {
-            is_streaming: true,
-            token: String::from("")
-        }
-    );
+    // app_event!(
+    //     &window,
+    //     Response,
+    //     ResponsePayload {
+    //         is_streaming: true,
+    //         token: String::from("")
+    //     }
+    // );
 
-    let handle = tauri::async_runtime::spawn_blocking(move || {
-        let model_guard = model.lock().unwrap();
-        let model = match &*model_guard {
-            Some(model) => model,
-            None => panic!("model is not loaded"),
-        };
-        let mut session =
-            crate::services::llm::new_session(model.as_ref(), &message);
+    let window = std::sync::Arc::new(window);
+    crate::services::llm::infer(window, message, model, abort_handle);
 
-        let mut utf8_buf = llm::TokenUtf8Buffer::new();
-
-        while let Ok(token) = session.infer_next_token(
-            model.as_ref(),
-            &llm::InferenceParameters::default(),
-            &mut Default::default(),
-            &mut rand::thread_rng(),
-        ) {
-            if let Some(token) = utf8_buf.push(&token) {
-                app_event!(
-                    &window,
-                    Response,
-                    ResponsePayload {
-                        is_streaming: true,
-                        token
-                    }
-                );
-            }
-        }
-
-        app_event!(
-            &window,
-            Response,
-            ResponsePayload {
-                is_streaming: false,
-                token: String::from("")
-            }
-        );
-    });
-
-    let mut abort_handle_guard = llm_state
-        .abort_handle
-        .lock()
-        .expect("failed to get abort_handle lock");
-    *abort_handle_guard = Some(handle);
+    // let mut abort_handle_guard = llm_state
+    //     .abort_handle
+    //     .lock()
+    //     .expect("failed to get abort_handle lock");
+    // *abort_handle_guard = Some(handle);
 }
 
 #[tauri::command]
 pub fn stop_inference(llm_state: tauri::State<crate::LLMState>) {
-    let mut abort_handle_guard = llm_state
+    llm_state
         .abort_handle
-        .lock()
-        .expect("failed to get abort handle lock");
+        .store(true, std::sync::atomic::Ordering::Relaxed);
 
-    // TODO: aborting the handle will not stop the inference
-    if let Some(handle) = abort_handle_guard.take() {
-        handle.abort();
-    }
+    // Closures spawned using spawn_blocking cannot be cancelled abruptly using handle abort;
+    // there is no standard low level API to cause a thread to stop running.
+    // let mut abort_handle_guard = llm_state
+    //     .abort_handle
+    //     .lock()
+    //     .expect("failed to get abort handle lock");
+
+    // if let Some(handle) = abort_handle_guard.take() {
+    //     handle.abort();
+    // }
 }
 
 #[tauri::command]

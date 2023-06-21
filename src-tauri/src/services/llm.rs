@@ -1,7 +1,13 @@
-use std::str::FromStr;
+use std::{
+    str::FromStr,
+    sync::{atomic::AtomicBool, Arc, Mutex},
+};
+
+use crate::app_event;
+use crate::utils::events::*;
 
 pub fn set_model(
-    llm_state: tauri::State<crate::LLMState>,
+    llm_state: &tauri::State<crate::LLMState>,
     app_handle: &tauri::AppHandle,
     model_info: &crate::utils::models::ModelInfo,
 ) {
@@ -60,4 +66,93 @@ pub fn new_session(
         .expect("Failed to ingest initial prompt.");
 
     session
+}
+
+pub fn infer(
+    window: Arc<tauri::Window>,
+    message: String,
+    model: Arc<Mutex<Option<Box<dyn llm::Model>>>>,
+    abort_handle: Arc<AtomicBool>,
+) {
+    tauri::async_runtime::spawn_blocking(move || {
+        let model_guard = model.lock().unwrap();
+        let model = match &*model_guard {
+            Some(model) => model,
+            None => panic!("model is not loaded"),
+        };
+        let parameters = llm::InferenceParameters::default();
+        let mut rng = rand::thread_rng();
+
+        let mut stats = llm::InferenceStats::default();
+        let start_at = std::time::SystemTime::now();
+
+        let mut session =
+            crate::services::llm::new_session(model.as_ref(), &message);
+
+        app_event!(
+            &window,
+            Response,
+            ResponsePayload {
+                is_streaming: true,
+                token: String::from("")
+            }
+        );
+
+        stats.feed_prompt_duration = start_at.elapsed().unwrap();
+        stats.prompt_tokens = session.n_past;
+
+        let max_token_count = usize::MAX;
+        let mut tokens_processed = 0;
+        let mut response = String::from("");
+        let mut utf8_buf = llm::TokenUtf8Buffer::new();
+        while tokens_processed < max_token_count {
+            if abort_handle.load(std::sync::atomic::Ordering::Relaxed) {
+                break;
+            }
+
+            let token = match session.infer_next_token(
+                model.as_ref(),
+                &parameters,
+                &mut Default::default(),
+                &mut rng,
+            ) {
+                Ok(token) => token,
+                Err(llm::InferenceError::EndOfText) => break,
+                Err(e) => panic!("Failed to infer next token: {}", e),
+            };
+
+            if let Some(token) = utf8_buf.push(&token) {
+                response.push_str(&token);
+                app_event!(
+                    &window,
+                    Response,
+                    ResponsePayload {
+                        is_streaming: true,
+                        token
+                    }
+                );
+            }
+
+            tokens_processed += 1;
+        }
+        stats.predict_duration = start_at.elapsed().unwrap();
+        stats.predict_tokens = session.n_past;
+
+        tauri::async_runtime::spawn(async move {
+            println!("start_at: {:?}", start_at);
+            println!("Response: {}", response);
+            println!("Stats: {:?}", stats);
+        });
+
+        abort_handle.store(false, std::sync::atomic::Ordering::Relaxed);
+
+        app_event!(
+            &window,
+            Response,
+            ResponsePayload {
+                is_streaming: false,
+                token: String::from("")
+            }
+        );
+    });
 }

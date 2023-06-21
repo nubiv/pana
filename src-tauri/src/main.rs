@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
 use tauri::{generate_handler, Manager};
 
@@ -16,7 +17,7 @@ use commands::{
 #[derive(Default)]
 pub struct LLMState {
     pub model: Arc<Mutex<Option<Box<dyn llm::Model>>>>,
-    pub abort_handle: Arc<Mutex<Option<tauri::async_runtime::JoinHandle<()>>>>,
+    pub abort_handle: Arc<AtomicBool>,
 }
 
 #[derive(Default)]
@@ -49,7 +50,7 @@ fn main() {
             // window_vibrancy::apply_blur(&window, Some((18, 18, 18, 125)))
             //   .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
 
-            app.manage(LLMState::default());
+            app.manage(LLMState::default() );
             app.manage(DownloadState::default());
 
             Ok(())
