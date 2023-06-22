@@ -45,9 +45,9 @@ const creatDownloadStateStore = () => {
     const { size } = payload
 
     update((prev) => {
-      let totalSize = prev.totalSize
+      const totalSize = prev.totalSize
 
-      let progress = ((size / totalSize!) * 100.0).toFixed(2)
+      const progress = ((size / totalSize!) * 100.0).toFixed(2)
 
       return {
         ...prev,
