@@ -1,4 +1,4 @@
-import { writable, type Writable } from 'svelte/store'
+import { writable } from 'svelte/store'
 
 type TDownloadState = {
   currentDownload: string | null
@@ -45,9 +45,9 @@ const creatDownloadStateStore = () => {
     const { size } = payload
 
     update((prev) => {
-      const totalSize = prev.totalSize
+      const totalSize = prev.totalSize as number
 
-      const progress = ((size / totalSize!) * 100.0).toFixed(2)
+      const progress = ((size / totalSize) * 100.0).toFixed(2)
 
       return {
         ...prev,

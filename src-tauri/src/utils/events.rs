@@ -86,8 +86,7 @@ where
     pub fn emit(self, window: &tauri::Window) {
         window
             .emit(self.name, self.payload)
-            .map_err(|e| println!("Error {:?}", e))
-            .unwrap();
+            .expect("failed to emit event");
     }
 }
 
