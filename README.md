@@ -1,6 +1,6 @@
 <h1 align="center">
 Pana 
-<img height="30" src="public/app-icon.png">
+<img height="28" src="public/app-icon.png">
 </h1>
 
 <!-- [![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/Ryc9Cbws) -->
@@ -14,9 +14,6 @@ Pana
 A locally hosted desktop assistant leveraging LLMs, enabling offline question-answering with complete data privacy.
 </p>
 
-<!-- > **🔔 Note!!!**
-> This project is currently in its early stages of development. -->
-
 ## Demo
 
 <p align="center">
@@ -26,7 +23,8 @@ A locally hosted desktop assistant leveraging LLMs, enabling offline question-an
 ## Installation
 
 You can find the installer for your operating system on [release page](https://github.com/nubiv/pana/releases). Please note that the current version is not stable yet, and you may encounter various bugs.
-** 🔔 NB: For windows users, you may need to run it as administrator.**
+
+🔔 NB: For windows users, you may need to run it as administrator.
 
 ## TechStacks
 
@@ -39,13 +37,11 @@ You can find the installer for your operating system on [release page](https://g
 
 ## Prerequisites
 
-Before getting started with the Tauri project, ensure that you have the following prerequisites installed on your machine:
+Before getting started with this project, ensure that you have the following prerequisites installed on your machine:
 
 1. Node.js: Make sure you have Node.js installed. You can download it from the official website: https://nodejs.org.
 
 2. Rust: Tauri is powered by Rust, so you'll need to have Rust installed. You can install Rust by following the instructions on their website: https://www.rust-lang.org.
-
-<!-- 3. LLM: Place a GGML-targeting `.bin` LLM model (currently only tested with Llama model) in the `llm` folder. -->
 
 Once you have these prerequisites installed, you're ready to start working with Tauri and building your applications.
 
@@ -67,8 +63,6 @@ To build the application from source, run `npm run tauri build`, or `cargo tauri
 
 <!-- Offline Mode -->
 
-<!-- - [x] Uncontextual conversation with LLM model -->
-
 - [ ] Contextual conversation with LLM model for assistance and support
 - [ ] Search functionality to quickly locate information within the document
 - [ ] Summarization of lengthy documents for easy understanding
@@ -79,7 +73,7 @@ To build the application from source, run `npm run tauri build`, or `cargo tauri
 
 ## Contributing
 
-Contributions are always welcome! Please submit a pull request if you'd like to contribute to this project.
+Contributions are always welcome! Please submit a pull request to `dev` branch and make sure it passes CI check if you'd like to contribute to this project.
 
 ## License
 
