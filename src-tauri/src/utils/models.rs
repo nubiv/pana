@@ -10,6 +10,7 @@ pub struct ModelInfo {
     pub name: String,
     pub filename: String,
     pub architecture: String,
+    pub total_size: u64,
     pub download_url: String,
 }
 
@@ -18,11 +19,7 @@ pub struct ModelList {
     pub models: Vec<ModelInfo>,
 }
 
-pub fn read_model_list(
-    app_handle: &tauri::AppHandle,
-    window: &tauri::Window,
-    tx: tokio::sync::mpsc::Sender<ModelPayload>,
-) {
+pub fn read_model_list(app_handle: &tauri::AppHandle, window: &tauri::Window) {
     let model_config_path = app_handle
         .path_resolver()
         .resolve_resource("./models")
@@ -62,20 +59,17 @@ pub fn read_model_list(
         };
 
         let model = model.clone();
-        let tx = tx.clone();
-        tauri::async_runtime::spawn(async move {
-            let client = reqwest::Client::new();
-            let res = client.get(&model.download_url).send().await;
+        println!("{:?}", model);
 
-            let total_size = res.unwrap().content_length().unwrap();
-            let model_payload_info = ModelPayload {
+        app_event!(
+            window,
+            Model,
+            ModelPayload {
                 name: model.name.clone(),
                 size,
-                total_size,
-            };
-
-            tx.send(model_payload_info).await.expect("failed to send");
-        });
+                total_size: model.total_size,
+            }
+        );
     });
 }
 

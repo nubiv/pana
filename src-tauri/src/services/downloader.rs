@@ -56,33 +56,6 @@ pub async fn download(
                 app_event!(window, Download, DownloadPayload { size });
             }
 
-            // while stream.try_next().await.is_ok() {
-            //     while let Some(chunk) = chunk_option.take() {
-            //         if let Err(e) = model.write_all(&chunk).await {
-            //             println!("error out {}", e);
-
-            //             app_event!(
-            //                     window,
-            //                     Error,
-            //                     ErrorPayload {
-            //                         message: String::from(
-            //                             "Something went wrong while downloading, please try again."
-            //                         )
-            //                     }
-            //                 );
-
-            //             return Ok(());
-            //         };
-
-            //         size += chunk.len() as u64;
-
-            //         app_event!(window, Download, DownloadPayload { size });
-            //     }
-            // } else {
-
-            // };
-
-            println!("download completed.");
             app_event!(
                 window,
                 Noticification,

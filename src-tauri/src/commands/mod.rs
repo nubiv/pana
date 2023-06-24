@@ -6,15 +6,7 @@ use crate::utils::models::{get_model_info, read_model_list};
 
 #[tauri::command]
 pub fn update_llm_models(app_handle: tauri::AppHandle, window: tauri::Window) {
-    let (tx, mut rx) = tokio::sync::mpsc::channel::<ModelPayload>(10);
-
-    read_model_list(&app_handle, &window, tx);
-
-    tauri::async_runtime::spawn(async move {
-        while let Some(model_payload_info) = rx.recv().await {
-            app_event!(&window, Model, model_payload_info);
-        }
-    });
+    read_model_list(&app_handle, &window);
 }
 
 #[tauri::command]
