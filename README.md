@@ -22,9 +22,9 @@ A locally hosted desktop assistant leveraging LLMs, enabling offline question-an
 
 ## Installation
 
-You can find the installer for your operating system on [release page](https://github.com/nubiv/pana/releases). Please note that the current version is not stable yet, and you may encounter various bugs.
+You can find the installer/bundle for your operating system on [release page](https://github.com/nubiv/pana/releases). Please note that the current version is not stable yet, and you may encounter various bugs.
 
-🔔 NB: For windows users, you may need to run it as administrator.
+🔔 NB: For windows users, it may be necessary to run the application as admin because model downloading feature requires read and write access to the resource path.
 
 ## TechStacks
 
@@ -61,15 +61,15 @@ To build the application from source, run `npm run tauri build`, or `cargo tauri
 
 ## Roadmap
 
-<!-- Offline Mode -->
-
-- [ ] Contextual conversation with LLM model for assistance and support
-- [ ] Search functionality to quickly locate information within the document
-- [ ] Summarization of lengthy documents for easy understanding
-
-<!-- Online Mode (Not sure if this is needed)
-
-- [ ] Interaction with ChatGPT or other models using your own key -->
+- [x] In-app model downloading
+- [ ] Local interaction with LLM models
+  - [ ] Contextual conversation with embedded chat history store
+  - [ ] Customizable LLM model parameters
+- [ ] Lang-chain tool integration
+  - [ ] Search functionality to quickly locate information within the document
+  - [ ] Summarization of lengthy documents
+- [ ] Extensible plugin system for Lang-chain tools
+- [ ] Clean and intuitive UI for daily use
 
 ## Contributing
 
