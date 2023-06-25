@@ -21,8 +21,11 @@ jobs:
           cache: 'npm'
       - name: get version
         run: echo "PACKAGE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
-      - name: get changelog
-        run: echo "CHANGE_LOG=$(npx auto-changelog -p --stdout --ignore-commit-pattern '^(update|doc|chore|(?!.*:)).*' --hide-credit)" >> $GITHUB_ENV
+      - name: get encoded changelog
+        run: |
+          changelog=$(npx auto-changelog -p --stdout --ignore-commit-pattern '^(update|doc|chore|(?!.*:)).*' --hide-credit)
+          encoded_changelog=$(echo "$changelog" | base64)
+          echo "CHANGE_LOG=$encoded_changelog" >> $GITHUB_ENV
       - name: create release
         id: create-release
         uses: actions/github-script@v6
@@ -33,7 +36,7 @@ jobs:
               repo: context.repo.repo,
               tag_name: `pana-v${process.env.PACKAGE_VERSION}`,
               name: `pana-v${process.env.PACKAGE_VERSION}`,
-              body: `Take a look at the assets to download and install this app.\n{process.env.CHANGE_LOG}`,
+              body: `Take a look at the assets to download the installer/bundle for your operating system.\n{process.env.CHANGE_LOG}` + Buffer.from(process.env.CHANGE_LOG, 'base64').toString('utf-8'),
               draft: true,
               prerelease: false
             })
