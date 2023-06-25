@@ -1,6 +1,6 @@
 import { writable, derived } from 'svelte/store'
 
-const TIMEOUT = 2000
+const TIMEOUT = 2500
 
 type TToastType = 'notification' | 'error'
 export type TToast = {

@@ -17,7 +17,11 @@ import DeleteDialog from './DeleteDialog.svelte'
 import { toasts } from '$lib/store/toasts'
 
 async function openModelFolder() {
-  const path = await resolveResource('models')
+  const path = await resolveResource('models').catch((err) => {
+    toasts.error(err)
+  })
+
+  if (!path) return
   await invoke('open_model_folder', { path }).catch((err) => {
     toasts.error(err)
   })
