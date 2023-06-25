@@ -19,7 +19,8 @@ async function stopGenerating() {
 }
 </script>
 
-<Card class="relative w-[80%] mx-auto my-2 mt-14 h-[80%] overflow-auto">
+<Card
+  class="relative w-[80%] mx-auto my-2 mt-14 h-[80%] overflow-auto no-scrollbar">
   <CardContent class="my-4">
     {#each $HistoryState as message, idx (idx)}
       {#if message.role == 'Me'}

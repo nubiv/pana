@@ -30,7 +30,7 @@ async function openModelFolder() {
       <Settings class="h-4 w-4" />
     </Toggle>
   </SheetTrigger>
-  <SheetContent position="right" size="lg">
+  <SheetContent class="overflow-auto no-scrollbar" position="right" size="lg">
     <SheetHeader>
       <SheetTitle>Settings</SheetTitle>
     </SheetHeader>
