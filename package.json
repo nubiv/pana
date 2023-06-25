@@ -1,7 +1,7 @@
 {
   "name": "pana",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,8 @@
     "format": "prettier --write ./src/**/*.{svelte,ts}",
     "lint": "eslint './src/**/*.{ts,svelte}'",
     "lint:fix": "eslint --fix './src/**/*.{ts,svelte}'",
-    "precommit": "npm run format && npm run lint:fix"
+    "precommit": "npm run format && npm run lint:fix",
+    "version": "npx auto-changelog -p --ignore-commit-pattern '^(update|doc|chore|(?!.*:)).*'"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^1.0.0-next.50",
