@@ -21,18 +21,22 @@ export let modelName: string
 
 async function deleteModel() {
   if ($DownloadState.currentDownload === modelName) {
-    toasts.error('Stop downloading first...')
+    toasts.error('Stop downloading before processing further...')
     return
   }
 
   if ($LLMState.runnningModel === modelName) {
-    toasts.error('Unloading model first...')
+    toasts.error('Unloading model before processing further...')
     return
   }
 
-  await invoke('delete_model', { modelName })
+  await invoke('delete_model', { modelName }).catch((err) => {
+    toasts.error(err)
+  })
 
-  await invoke('update_llm_models')
+  await invoke('update_llm_models').catch((err) => {
+    toasts.error(err)
+  })
 }
 </script>
 

@@ -30,7 +30,9 @@ async function download(e: MouseEvent) {
   }
 
   const modelName = (e.target as HTMLButtonElement).id
-  await invoke('download_model', { modelName })
+  await invoke('download_model', { modelName }).catch((err) => {
+    toasts.error(err)
+  })
 
   const modelInfo = list[modelName]
   const { size, totalSize } = modelInfo
@@ -40,11 +42,15 @@ async function download(e: MouseEvent) {
 }
 
 async function stopDownload() {
-  await invoke('stop_download')
+  await invoke('stop_download').catch((err) => {
+    toasts.error(err)
+  })
 
   DownloadState.stopDownload()
 
-  await invoke('update_llm_models')
+  await invoke('update_llm_models').catch((err) => {
+    toasts.error(err)
+  })
 }
 
 async function loadModel(e: MouseEvent) {
@@ -54,13 +60,17 @@ async function loadModel(e: MouseEvent) {
   }
 
   const modelName = (e.target as HTMLButtonElement).id
-  await invoke('load_model', { modelName })
+  await invoke('load_model', { modelName }).catch((err) => {
+    toasts.error(err)
+  })
 
   LLMState.updateRunningModel(modelName)
 }
 
 async function unloadModel() {
-  await invoke('unload_model')
+  await invoke('unload_model').catch((err) => {
+    toasts.error(err)
+  })
 
   LLMState.stopRunningModel()
 }

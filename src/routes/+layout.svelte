@@ -80,7 +80,7 @@ onMount(async () => {
       if (payload.size === $DownloadState.totalSize) {
         DownloadState.stopDownload()
 
-        await invoke('update_llm_models').catch((e) => console.log(e))
+        await invoke('update_llm_models').catch((e) => toasts.error(e))
       }
     }
   )
@@ -95,7 +95,7 @@ onMount(async () => {
     LLMState.updateModelList(payload)
   })
 
-  await invoke('update_llm_models').catch((e) => console.log(e))
+  await invoke('update_llm_models').catch((e) => toasts.error(e))
 })
 
 onDestroy(() => {

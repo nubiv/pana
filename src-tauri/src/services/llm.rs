@@ -1,16 +1,18 @@
+use anyhow::anyhow;
 use std::{
     str::FromStr,
     sync::{atomic::AtomicBool, Arc, Mutex},
 };
 
-use crate::app_event;
+use crate::utils::errors::{InitingError, LLMError};
 use crate::utils::events::*;
+use crate::{app_event, utils::errors::InferenceError};
 
 pub fn set_model(
     llm_state: &tauri::State<crate::LLMState>,
     app_handle: &tauri::AppHandle,
     model_info: &crate::utils::models::ModelInfo,
-) {
+) -> Result<(), LLMError> {
     let model_config_path = app_handle
         .path_resolver()
         .resolve_resource("./models")
@@ -21,7 +23,7 @@ pub fn set_model(
 
     let architecture =
         llm::ModelArchitecture::from_str(model_info.architecture.as_str())
-            .expect("failed to parse model architecture");
+            .map_err(InitingError::UnsupportedArch)?;
     let params = llm::ModelParameters {
         ..Default::default()
     };
@@ -32,16 +34,21 @@ pub fn set_model(
         params,
         llm::load_progress_callback_stdout,
     )
-    .unwrap_or_else(|e| panic!("Failed to load model: {}", e));
+    .map_err(InitingError::LoadError)?;
 
-    let mut model_guard = llm_state.model.lock().unwrap();
+    let mut model_guard = llm_state
+        .model
+        .lock()
+        .map_err(|_| LLMError::Custom(anyhow!("Failed to setup model.")))?;
     *model_guard = Some(model);
+
+    Ok(())
 }
 
 pub fn new_session(
     model: &dyn llm::Model,
     message: &str,
-) -> llm::InferenceSession {
+) -> Result<llm::InferenceSession, LLMError> {
     let character_name = "### Assistant";
     let user_name = "### Human";
     let persona = "A chat between a human and an assistant.";
@@ -63,9 +70,9 @@ pub fn new_session(
             &mut Default::default(),
             |_| Ok(llm::InferenceFeedback::Continue),
         )
-        .expect("Failed to ingest initial prompt.");
+        .map_err(InferenceError::FeedingPromptError)?;
 
-    session
+    Ok(session)
 }
 
 pub fn infer(
@@ -75,10 +82,33 @@ pub fn infer(
     abort_handle: Arc<AtomicBool>,
 ) {
     tauri::async_runtime::spawn_blocking(move || {
-        let model_guard = model.lock().unwrap();
+        let model_guard = match model.lock() {
+            Ok(model_guard) => model_guard,
+            Err(_) => {
+                app_event!(
+                    &window,
+                    Error,
+                    ErrorPayload {
+                        message: String::from("Failed to read model.")
+                    }
+                );
+
+                return;
+            }
+        };
         let model = match &*model_guard {
             Some(model) => model,
-            None => panic!("model is not loaded"),
+            None => {
+                app_event!(
+                    &window,
+                    Error,
+                    ErrorPayload {
+                        message: String::from("Model not loaded.")
+                    }
+                );
+
+                return;
+            }
         };
         let parameters = llm::InferenceParameters::default();
         let mut rng = rand::thread_rng();
@@ -97,7 +127,33 @@ pub fn infer(
         );
 
         let mut session =
-            crate::services::llm::new_session(model.as_ref(), &message);
+            match crate::services::llm::new_session(model.as_ref(), &message) {
+                Ok(session) => session,
+                Err(e) => {
+                    app_event!(
+                        &window,
+                        Error,
+                        ErrorPayload {
+                            message: format!(
+                                "Failed to process with inference: {}",
+                                e
+                            )
+                        }
+                    );
+
+                    app_event!(
+                        &window,
+                        Response,
+                        ResponsePayload {
+                            is_streaming: false,
+                            is_feeding_prompt: false,
+                            token: String::from("")
+                        }
+                    );
+
+                    return;
+                }
+            };
 
         app_event!(
             &window,
