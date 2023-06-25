@@ -2,14 +2,14 @@ use futures_util::TryStreamExt;
 use tokio::io::AsyncWriteExt;
 
 use crate::app_event;
-use crate::utils::errors::DownloadError;
+use crate::utils::errors::IOError;
 use crate::utils::events::*;
 
 pub async fn download(
     window: &tauri::Window,
     bin_path: &std::path::Path,
     model_info: &crate::utils::models::ModelInfo,
-) -> Result<(), DownloadError> {
+) -> Result<(), IOError> {
     let model_filename = bin_path.join(&model_info.filename);
 
     let chunk_in_place = match tokio::fs::File::open(&model_filename).await {
@@ -30,7 +30,7 @@ pub async fn download(
         .get(&model_info.download_url)
         .header("Range", format!("bytes={}-", &chunk_in_place))
         .send()
-        .await;
+        .await?;
 
     let mut model = tokio::fs::OpenOptions::new()
         .read(true)
@@ -40,32 +40,28 @@ pub async fn download(
         .open(&model_filename)
         .await?;
 
-    match res {
-        Ok(res) => {
-            let mut stream = res.bytes_stream();
+    let mut stream = res.bytes_stream();
 
-            let mut size = chunk_in_place;
+    let mut size = chunk_in_place;
 
-            while let Some(chunk) = stream.try_next().await? {
-                if let Err(e) = model.write_all(&chunk).await {
-                    println!("error out {}", e);
-                };
+    while let Some(chunk) = stream.try_next().await? {
+        // if let Err(e) = model.write_all(&chunk).await {
+        //     return Err(e);
+        // };
+        model.write_all(&chunk).await?;
 
-                size += chunk.len() as u64;
+        size += chunk.len() as u64;
 
-                app_event!(window, Download, DownloadPayload { size });
-            }
-
-            app_event!(
-                window,
-                Noticification,
-                NoticificationPayload {
-                    message: String::from("Download completed.")
-                }
-            );
-
-            Ok(())
-        }
-        Err(e) => Err(DownloadError::Custom(anyhow::Error::new(e))),
+        app_event!(window, Download, DownloadPayload { size });
     }
+
+    app_event!(
+        window,
+        Noticification,
+        NoticificationPayload {
+            message: String::from("Download completed.")
+        }
+    );
+
+    Ok(())
 }

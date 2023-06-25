@@ -5,8 +5,13 @@ use crate::utils::events::*;
 use crate::utils::models::{get_model_info, read_model_list};
 
 #[tauri::command]
-pub fn update_llm_models(app_handle: tauri::AppHandle, window: tauri::Window) {
-    read_model_list(&app_handle, &window);
+pub fn update_llm_models(
+    app_handle: tauri::AppHandle,
+    window: tauri::Window,
+) -> Result<(), String> {
+    read_model_list(&app_handle, &window).map_err(|e| e.to_string())?;
+
+    Ok(())
 }
 
 #[tauri::command]
@@ -15,17 +20,19 @@ pub fn download_model(
     window: tauri::Window,
     model_name: String,
     download_state: tauri::State<crate::DownloadState>,
-) {
+) -> Result<(), String> {
     use crate::utils::models::ModelList;
 
     let config_dir_path = app_handle
         .path_resolver()
         .resolve_resource("./models")
-        .expect("failed to resolve resource");
+        .ok_or(String::from("Failed to resolve resource path."))?;
 
     let config_file_path = config_dir_path.join("models.json");
-    let model_config = std::fs::File::open(config_file_path).unwrap();
-    let model_list: ModelList = serde_json::from_reader(model_config).unwrap();
+    let model_config = std::fs::File::open(config_file_path)
+        .map_err(|e| format!("Failed to read configs: {}", e))?;
+    let model_list: ModelList = serde_json::from_reader(model_config)
+        .map_err(|e| format!("Failed to read configs: {}", e))?;
 
     let bin_dir_path = config_dir_path.join("bin");
 
@@ -36,27 +43,53 @@ pub fn download_model(
             .find(|model| model.name == model_name)
         {
             Some(model) => model,
-            None => panic!("model not found"),
+            None => {
+                app_event!(
+                    &window,
+                    Error,
+                    ErrorPayload {
+                        message: String::from("Model not found.")
+                    }
+                );
+
+                return;
+            }
         };
 
-        download(&window, &bin_dir_path, target_model)
-            .await
-            .expect("failed to download");
+        if let Err(e) = download(&window, &bin_dir_path, target_model).await {
+            app_event!(
+                &window,
+                Error,
+                ErrorPayload {
+                    message: format!("Failed to download model: {}", e)
+                }
+            );
+        }
     });
 
     let mut abort_handlers_guard =
         download_state.abort_handlers.lock().unwrap();
     *abort_handlers_guard = Some(download_handle);
+
+    Ok(())
 }
 
 #[tauri::command]
-pub fn stop_download(download_state: tauri::State<crate::DownloadState>) {
+pub fn stop_download(
+    download_state: tauri::State<crate::DownloadState>,
+) -> Result<(), String> {
     let mut abort_handlers_guard =
-        download_state.abort_handlers.lock().unwrap();
+        download_state.abort_handlers.lock().map_err(|_| {
+            String::from(
+                "Something went wrong while attempting to stop downloading.",
+            )
+        })?;
 
     if let Some(handle) = abort_handlers_guard.take() {
         handle.abort();
     }
+
+    Ok(())
 }
 
 #[tauri::command]
@@ -64,15 +97,13 @@ pub fn delete_model(
     app_handle: tauri::AppHandle,
     window: tauri::Window,
     model_name: String,
-) {
-    use crate::utils::models::{delete_model, get_model_info};
+) -> Result<(), String> {
+    use crate::utils::models::delete_model;
 
-    let model_info = get_model_info(&app_handle, &model_name);
-    let model_path = app_handle
-        .path_resolver()
-        .resolve_resource(format!("./models/bin/{}", model_info.filename))
-        .expect("failed to resolve resource");
-    delete_model(&window, &model_path).expect("failed to delete model");
+    delete_model(&app_handle, &window, &model_name)
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
 }
 
 #[tauri::command]
@@ -81,9 +112,11 @@ pub fn load_model(
     window: tauri::Window,
     llm_state: tauri::State<crate::LLMState>,
     model_name: String,
-) {
-    let model_info = get_model_info(&app_handle, &model_name);
-    set_model(&llm_state, &app_handle, &model_info);
+) -> Result<(), String> {
+    let model_info =
+        get_model_info(&app_handle, &model_name).map_err(|e| e.to_string())?;
+    set_model(&llm_state, &app_handle, &model_info)
+        .map_err(|e| e.to_string())?;
 
     app_event!(
         &window,
@@ -92,14 +125,18 @@ pub fn load_model(
             message: String::from("Model loaded.")
         }
     );
+
+    Ok(())
 }
 
 #[tauri::command]
 pub fn unload_model(
     window: tauri::Window,
     llm_state: tauri::State<crate::LLMState>,
-) {
-    let mut model_guard = llm_state.model.lock().unwrap();
+) -> Result<(), String> {
+    let mut model_guard = llm_state.model.lock().map_err(|_| {
+        String::from("Something went wrong while attempting to unload model.")
+    })?;
     *model_guard = None;
 
     app_event!(
@@ -109,6 +146,8 @@ pub fn unload_model(
             message: String::from("Model unloaded.")
         }
     );
+
+    Ok(())
 }
 
 #[tauri::command]
@@ -116,7 +155,7 @@ pub fn start_inference(
     llm_state: tauri::State<crate::LLMState>,
     window: tauri::Window,
     message: String,
-) {
+) -> Result<(), String> {
     let model = llm_state.model.clone();
     let abort_handle = llm_state.abort_handle.clone();
 
@@ -128,16 +167,22 @@ pub fn start_inference(
     //     .lock()
     //     .expect("failed to get abort_handle lock");
     // *abort_handle_guard = Some(handle);
+    Ok(())
 }
 
 #[tauri::command]
-pub fn stop_inference(llm_state: tauri::State<crate::LLMState>) {
+pub fn stop_inference(
+    llm_state: tauri::State<crate::LLMState>,
+) -> Result<(), String> {
+    // Since inference session will consistantly check the abort_handle
+    // to see if it should stop, relaxed ordering is fine here.
     llm_state
         .abort_handle
         .store(true, std::sync::atomic::Ordering::Relaxed);
 
     // Closures spawned using spawn_blocking cannot be cancelled abruptly using handle abort;
     // there is no standard low level API to cause a thread to stop running.
+
     // let mut abort_handle_guard = llm_state
     //     .abort_handle
     //     .lock()
@@ -146,10 +191,11 @@ pub fn stop_inference(llm_state: tauri::State<crate::LLMState>) {
     // if let Some(handle) = abort_handle_guard.take() {
     //     handle.abort();
     // }
+    Ok(())
 }
 
 #[tauri::command]
-pub fn open_model_folder(path: String) {
+pub fn open_model_folder(path: String) -> Result<(), String> {
     use std::process::Command;
 
     #[cfg(target_os = "windows")]
@@ -157,7 +203,7 @@ pub fn open_model_folder(path: String) {
         Command::new("explorer")
             .args(["/select,", &path]) // The comma after select is not a typo
             .spawn()
-            .unwrap();
+            .map_err(|e| e.to_string())?;
     }
 
     #[cfg(target_os = "linux")]
@@ -172,7 +218,10 @@ pub fn open_model_folder(path: String) {
                     path2.into_os_string().into_string().unwrap()
                 }
             };
-            Command::new("xdg-open").arg(&new_path).spawn().unwrap();
+            Command::new("xdg-open")
+                .arg(&new_path)
+                .spawn()
+                .map_err(|e| e.to_string())?;
         } else {
             Command::new("dbus-send")
                 .args([
@@ -185,12 +234,17 @@ pub fn open_model_folder(path: String) {
                     "string:\"\"",
                 ])
                 .spawn()
-                .unwrap();
+                .map_err(|e| e.to_string())?;
         }
     }
 
     #[cfg(target_os = "macos")]
     {
-        Command::new("open").args(["-R", &path]).spawn().unwrap();
+        Command::new("open")
+            .args(["-R", &path])
+            .spawn()
+            .map_err(|e| e.to_string())?;
     }
+
+    Ok(())
 }

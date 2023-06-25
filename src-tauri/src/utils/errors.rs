@@ -1,18 +1,31 @@
-// TODO: need to refactor error types
 #[derive(thiserror::Error, Debug)]
 pub enum LLMError {
-    #[error("LLM is processing, wait a sec.")]
-    IsProcessing,
     #[error("Initing LLM failed.")]
-    InitingLLMFailed,
-    #[error("Feeding input to LLM failed: {0}")]
-    FeedingInputFailed(String),
+    InitingError(#[from] InitingError),
+    #[error("Inference failed.")]
+    InferenceError(#[from] InferenceError),
     #[error(transparent)]
     Custom(#[from] anyhow::Error),
 }
 
 #[derive(thiserror::Error, Debug)]
-pub enum DownloadError {
+pub enum InitingError {
+    #[error("Unsupported architecture.")]
+    UnsupportedArch(#[from] llm::UnsupportedModelArchitecture),
+    #[error("Failed to load model.")]
+    LoadError(#[from] llm::LoadError),
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum InferenceError {
+    #[error("Feeding prompt failed.")]
+    FeedingPromptError(#[from] llm::InferenceError),
+    // #[error("LLM is processing, wait a sec.")]
+    // IsProcessing,
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum IOError {
     #[error("File error {0}")]
     FileError(#[from] std::io::Error),
     #[error("Network error {0}")]
@@ -24,7 +37,7 @@ pub enum DownloadError {
 #[derive(thiserror::Error, Debug)]
 pub enum AppError {
     #[error("DownloadError {0}")]
-    DownloadError(#[from] DownloadError),
+    IOError(#[from] IOError),
     #[error("LLMError {0}")]
     LLMError(#[from] LLMError),
     #[error(transparent)]

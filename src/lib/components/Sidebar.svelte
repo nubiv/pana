@@ -14,10 +14,13 @@ import { LLMState, LocalModels, OtherModels, type TModel } from '$lib/store/llm'
 import { resolveResource } from '@tauri-apps/api/path'
 import { invoke } from '@tauri-apps/api/tauri'
 import DeleteDialog from './DeleteDialog.svelte'
+import { toasts } from '$lib/store/toasts'
 
 async function openModelFolder() {
   const path = await resolveResource('models')
-  await invoke('open_model_folder', { path })
+  await invoke('open_model_folder', { path }).catch((err) => {
+    toasts.error(err)
+  })
 }
 </script>
 

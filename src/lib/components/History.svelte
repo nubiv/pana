@@ -10,9 +10,12 @@ import { Button } from '$components/ui/button'
 import { Card, CardContent } from '$components/ui/card'
 import { HistoryState, StreamState } from '$lib/store/history'
 import { invoke } from '@tauri-apps/api/tauri'
+import { toasts } from '$lib/store/toasts'
 
 async function stopGenerating() {
-  await invoke('stop_inference')
+  await invoke('stop_inference').catch((err) => {
+    toasts.error(err)
+  })
 }
 </script>
 
