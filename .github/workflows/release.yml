@@ -21,26 +21,53 @@ jobs:
           cache: 'npm'
       - name: get version
         run: echo "PACKAGE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
-      - name: get encoded changelog
-        run: |
-          changelog=$(npx auto-changelog -p --stdout --ignore-commit-pattern '^(update|doc|chore|(?!.*:)).*' --hide-credit)
-          encoded_changelog=$(echo "$changelog" | base64)
-          echo "CHANGE_LOG=$encoded_changelog" >> $GITHUB_ENV
+      - name: get changelog
+        run: npx auto-changelog -p --stdout --ignore-commit-pattern '^(update|doc|chore|(?!.*:)).*' --hide-credit > changelog.txt
+      - name: upload Changelog
+        uses: actions/upload-artifact@v3
+        with:
+          name: changelog
+          path: changelog.txt
+      - name: get artifact id
+        id: get-artifact-id
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data } = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId
+            })
+            return data.artifacts[0].id
       - name: create release
         id: create-release
         uses: actions/github-script@v6
         with:
           script: |
+            const changelog = await github.rest.actions.getArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: ${{ steps.get-artifact-id.outputs.result }}
+            })
             const { data } = await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
               tag_name: `pana-v${process.env.PACKAGE_VERSION}`,
               name: `pana-v${process.env.PACKAGE_VERSION}`,
-              body: `Take a look at the assets to download the installer/bundle for your operating system.\n{process.env.CHANGE_LOG}` + Buffer.from(process.env.CHANGE_LOG, 'base64').toString('utf-8'),
+              body: `Take a look at the assets to download the installer/bundle for your operating system.\n{changelog}`,
               draft: true,
               prerelease: false
             })
             return data.id
+      - name: delete artifact
+        uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.actions.deleteArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: ${{ steps.get-artifact-id.outputs.result }}
+            })
 
   build-tauri:
     needs: [create-release]
