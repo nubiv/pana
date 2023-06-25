@@ -38,6 +38,7 @@ jobs:
               repo: context.repo.repo,
               run_id: context.runId
             })
+            console.log(data)
             return data.artifacts[0].id
       - name: create release
         id: create-release
