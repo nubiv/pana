@@ -4,11 +4,13 @@ updates:
     directory: '/'
     schedule:
       interval: 'weekly'
+    target-branch: 'dev'
 
   - package-ecosystem: 'cargo'
     directory: '/src-tauri'
     schedule:
       interval: 'weekly'
+    target-branch: 'dev'
     ignore:
       # Ignore updates to packages that start with 'aws'
       # Wildcards match zero or more arbitrary characters
