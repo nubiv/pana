@@ -39,25 +39,25 @@ You can find the installer/bundle for your operating system on [release page](ht
 
 Before getting started with this project, ensure that you have the following prerequisites installed on your machine:
 
-1. Node.js: Make sure you have Node.js installed. You can download it from the official website: https://nodejs.org.
+1. Node.js: Make sure you have Node.js installed. You can download it from https://nodejs.org.
 
-2. Rust: Tauri is powered by Rust, so you'll need to have Rust installed. You can install Rust by following the instructions on their website: https://www.rust-lang.org.
+2. Rust: Tauri is powered by Rust, so you'll need to have Rust installed. You can install Rust by following the instructions on https://www.rust-lang.org.
 
-Once you have these prerequisites installed, you're ready to start working with Tauri and building your applications.
+3. Pnpm: Pnpm is a fast, disk space efficient package manager. You can install it by running `npm install -g pnpm` or other methods described on https://pnpm.io.
 
 ## Getting Started
 
 1. Clone this repository to your local machine.
 2. Navigate to the project directory.
-3. Install dependencies using your preferred package manager, e.g. `npm install` or `yarn install`.
+3. Install dependencies `pnpm install`.
 
 ## Development
 
-To start the development server, run `npm run tauri dev`, or `cargo tauri dev` if you have Tauri CLI installed. This will launch the Tauri application and open a development window. Any changes you make to the source code will automatically reload the application.
+To start the development server, run `pnpm tauri dev`, or `cargo tauri dev` if you have Tauri CLI installed. This will launch the Tauri application and open a development window. Any changes you make to the source code will automatically reload the application.
 
 ## Build
 
-To build the application from source, run `npm run tauri build`, or `cargo tauri build` if you have Tauri CLI installed. This will build the application for your current platform.
+To build the application from source, run `pnpm tauri build`, or `cargo tauri build` if you have Tauri CLI installed. This will build the application for your current platform.
 
 ## Roadmap
 
