@@ -4,6 +4,9 @@ on:
     branches:
       - main
       - dev
+  push:
+    branches:
+      - dev
 
 jobs:
   CI:
@@ -62,5 +65,6 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
           includeDebug: true
           includeRelease: false
