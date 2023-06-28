@@ -12,7 +12,7 @@ mod utils;
 use commands::{
     delete_model, download_model, load_model, open_model_folder,
     start_inference, stop_download, stop_inference, unload_model,
-    update_llm_models, sync_history
+    update_llm_models, sync_history, clear_history
 };
 
 #[derive(Default)]
@@ -43,6 +43,7 @@ fn main() {
             stop_inference,
             delete_model,
             sync_history,
+            clear_history,
             open_model_folder
         ])
         .setup(|app| {

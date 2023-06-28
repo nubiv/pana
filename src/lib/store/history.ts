@@ -22,7 +22,7 @@ const initialStreamState: TStreamState = {
 }
 
 const createHistoryStore = () => {
-  const { subscribe, update } = writable(initialHistoryState)
+  const { subscribe, set, update } = writable(initialHistoryState)
 
   const addMessage = (message: TMessage) => {
     update((prev) => {
@@ -55,10 +55,15 @@ const createHistoryStore = () => {
     })
   }
 
+  const clearHistory = () => {
+    set(initialHistoryState)
+  }
+
   return {
     subscribe,
     addMessage,
-    syncHistory
+    syncHistory,
+    clearHistory
   }
 }
 

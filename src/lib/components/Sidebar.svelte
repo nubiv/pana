@@ -11,20 +11,22 @@ import { Settings } from 'lucide-svelte'
 import Toggle from './ui/toggle/Toggle.svelte'
 import Collapsible from './Collapsible.svelte'
 import { LLMState, LocalModels, OtherModels, type TModel } from '$lib/store/llm'
-import { resolveResource } from '@tauri-apps/api/path'
 import { invoke } from '@tauri-apps/api/tauri'
-import DeleteDialog from './DeleteDialog.svelte'
 import { toasts } from '$lib/store/toasts'
+import { HistoryState } from '$lib/store/history'
 
 async function openModelFolder() {
-  const path = await resolveResource('models').catch((err) => {
+  await invoke('open_model_folder').catch((err) => {
+    toasts.error(err)
+  })
+}
+
+async function clearHistory() {
+  await invoke('clear_history').catch((err) => {
     toasts.error(err)
   })
 
-  if (!path) return
-  await invoke('open_model_folder', { path }).catch((err) => {
-    toasts.error(err)
-  })
+  HistoryState.clearHistory()
 }
 </script>
 
@@ -50,5 +52,9 @@ async function openModelFolder() {
       variant="outline"
       class="mt-4 mr-7 float-right"
       on:click="{openModelFolder}">View models</Button>
+    <Button
+      variant="outline"
+      class="mt-4 mr-7 float-right"
+      on:click="{clearHistory}">Clear history</Button>
   </SheetContent>
 </Sheet>
