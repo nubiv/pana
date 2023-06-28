@@ -38,7 +38,7 @@ pub enum IOError {
 
 #[derive(thiserror::Error, Debug)]
 pub enum AppError {
-    #[error("DownloadError {0}")]
+    #[error("IOError {0}")]
     IOError(#[from] IOError),
     #[error("LLMError {0}")]
     LLMError(#[from] LLMError),

@@ -47,7 +47,7 @@ fn main() {
         .setup(|app| {
             let window = app.get_window("main").unwrap();
             let app_handle = app.handle();
-            let db = crate::db::init_db(&app_handle).expect("Failed to init db");
+            let db = crate::db::init_db(&app_handle, &window).expect("Failed to init db");
 
             #[cfg(target_os = "macos")]
             window_vibrancy::apply_vibrancy(&window, window_vibrancy::NSVisualEffectMaterial::HudWindow, None, None)
@@ -60,9 +60,7 @@ fn main() {
             
             app.manage(LLMState::default() );
             app.manage(DownloadState::default());
-            // make db mutable
             // lazy static path!!
-            // persist session to avoid unnecessarily long prompt loading time
             app.manage(DBState {
                 db: Arc::new(db),
                 tree: Arc::new(Mutex::new(None))
