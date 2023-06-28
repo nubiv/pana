@@ -30,9 +30,35 @@ const createHistoryStore = () => {
     })
   }
 
+  const syncHistory = (history: Array<number | string>[]) => {
+    const newHistory: TMessage[] = []
+    history.forEach((kv) => {
+      if (kv[0] === 0) {
+        const newMessage: TMessage = {
+          role: 'Me',
+          text: kv[1] as string
+        }
+
+        newHistory.push(newMessage)
+      } else {
+        const newMessage: TMessage = {
+          role: 'Pana',
+          text: kv[1] as string
+        }
+
+        newHistory.push(newMessage)
+      }
+    })
+
+    update((prev) => {
+      return [...prev, ...newHistory]
+    })
+  }
+
   return {
     subscribe,
-    addMessage
+    addMessage,
+    syncHistory
   }
 }
 
