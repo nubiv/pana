@@ -4,6 +4,7 @@ use std::fs;
 use crate::app_event;
 use crate::utils::errors::IOError;
 use crate::utils::events::*;
+use crate::utils::paths::get_models_path;
 
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct ModelInfo {
@@ -19,21 +20,35 @@ pub struct ModelList {
     pub models: Vec<ModelInfo>,
 }
 
-pub fn read_model_list(
+pub fn get_model_list(
+    app_handle: &tauri::AppHandle,
+    window: &tauri::Window,
+) -> Result<ModelList, IOError> {
+    let models_path = get_models_path(app_handle, window)?;
+    let model_json_path = models_path.join("models.json");
+
+    let model_config = fs::File::open(model_json_path)?;
+    let model_list: ModelList = serde_json::from_reader(
+        model_config,
+    )
+    .map_err(|e| {
+        IOError::Custom(anyhow!(
+            "Failed to read configs: {e}"
+        ))
+    })?;
+
+    Ok(model_list)
+}
+
+pub fn sync_model_list(
     app_handle: &tauri::AppHandle,
     window: &tauri::Window,
 ) -> Result<(), IOError> {
-    let model_config_path = app_handle
-        .path_resolver()
-        .resolve_resource("./models")
-        .ok_or(IOError::Custom(anyhow!("Failed to resolve resource path.")))?;
+    let models_path = get_models_path(app_handle, window)?;
 
-    let config_file = model_config_path.join("models.json");
-    let model_config = fs::File::open(config_file)?;
-    let model_list: ModelList = serde_json::from_reader(model_config)
-        .map_err(|e| IOError::Custom(anyhow!("Failed to read configs: {e}")))?;
+    let model_list = get_model_list(app_handle, window)?;
 
-    let bin_path = model_config_path.join("bin");
+    let bin_path = models_path.join("bin");
 
     if fs::read_dir(&bin_path).is_err() {
         fs::create_dir(&bin_path)?;
@@ -78,17 +93,21 @@ pub fn read_model_list(
 
 pub fn get_model_info(
     app_handle: &tauri::AppHandle,
+    window: &tauri::Window,
     model_name: &str,
 ) -> Result<ModelInfo, IOError> {
-    let config_dir_path = app_handle
-        .path_resolver()
-        .resolve_resource("./models")
-        .ok_or(IOError::Custom(anyhow!("Failed to resolve resource path.")))?;
+    let models_path = get_models_path(app_handle, window)?;
+    let model_json_path = models_path.join("models.json");
 
-    let config_file_path = config_dir_path.join("models.json");
-    let model_config = fs::File::open(config_file_path)?;
-    let model_list: ModelList = serde_json::from_reader(model_config)
-        .map_err(|e| IOError::Custom(anyhow!("Failed to read configs: {e}")))?;
+    let model_config = fs::File::open(model_json_path)?;
+    let model_list: ModelList = serde_json::from_reader(
+        model_config,
+    )
+    .map_err(|e| {
+        IOError::Custom(anyhow!(
+            "Failed to read configs: {e}"
+        ))
+    })?;
 
     let target_model = match model_list
         .models
@@ -96,7 +115,11 @@ pub fn get_model_info(
         .find(|model| model.name == model_name)
     {
         Some(model) => model,
-        None => return Err(IOError::Custom(anyhow!("Model not found."))),
+        None => {
+            return Err(IOError::Custom(anyhow!(
+                "Model not found."
+            )))
+        }
     };
 
     Ok(target_model.to_owned())
@@ -107,11 +130,11 @@ pub fn delete_model(
     window: &tauri::Window,
     model_name: &str,
 ) -> Result<(), IOError> {
-    let model_info = get_model_info(app_handle, model_name)?;
-    let model_path = app_handle
-        .path_resolver()
-        .resolve_resource(format!("./models/bin/{}", model_info.filename))
-        .ok_or(IOError::Custom(anyhow!("Failed to resolve resource path.")))?;
+    let model_info =
+        get_model_info(app_handle, window, model_name)?;
+    let model_path = get_models_path(app_handle, window)?
+        .join("bin")
+        .join(model_info.filename);
 
     match fs::remove_file(model_path) {
         Ok(_) => {
@@ -125,6 +148,8 @@ pub fn delete_model(
 
             Ok(())
         }
-        Err(e) => Err(IOError::Custom(anyhow!("Failed to delete model: {e}"))),
+        Err(e) => Err(IOError::Custom(anyhow!(
+            "Failed to delete model: {e}"
+        ))),
     }
 }

@@ -3,15 +3,16 @@ use crate::services::downloader::download;
 use crate::services::llm::set_model;
 use crate::utils::events::*;
 use crate::utils::models::{
-    get_model_info, read_model_list,
+    get_model_info, get_model_list, sync_model_list,
 };
+use crate::utils::paths::get_models_path;
 
 #[tauri::command]
 pub fn update_llm_models(
     app_handle: tauri::AppHandle,
     window: tauri::Window,
 ) -> Result<(), String> {
-    read_model_list(&app_handle, &window)
+    sync_model_list(&app_handle, &window)
         .map_err(|e| e.to_string())?;
 
     Ok(())
@@ -24,27 +25,14 @@ pub fn download_model(
     model_name: String,
     download_state: tauri::State<crate::DownloadState>,
 ) -> Result<(), String> {
-    use crate::utils::models::ModelList;
+    let models_path = get_models_path(&app_handle, &window)
+        .map_err(|e| e.to_string())?;
+    let bin_dir_path = models_path.join("bin");
 
-    let config_dir_path = app_handle
-        .path_resolver()
-        .resolve_resource("./models")
-        .ok_or(String::from(
-            "Failed to resolve resource path.",
-        ))?;
-
-    let config_file_path =
-        config_dir_path.join("models.json");
-    let model_config =
-        std::fs::File::open(config_file_path).map_err(
-            |e| format!("Failed to read configs: {}", e),
-        )?;
-    let model_list: ModelList =
-        serde_json::from_reader(model_config).map_err(
-            |e| format!("Failed to read configs: {}", e),
-        )?;
-
-    let bin_dir_path = config_dir_path.join("bin");
+    let model_list = get_model_list(&app_handle, &window)
+        .map_err(|e| {
+        format!("Failed to read configs: {}", e)
+    })?;
 
     let download_handle =
         tauri::async_runtime::spawn(async move {
@@ -136,7 +124,7 @@ pub fn load_model(
     model_name: String,
 ) -> Result<(), String> {
     let model_info =
-        get_model_info(&app_handle, &model_name)
+        get_model_info(&app_handle, &window, &model_name)
             .map_err(|e| e.to_string())?;
     set_model(&llm_state, &app_handle, &model_info)
         .map_err(|e| e.to_string())?;
