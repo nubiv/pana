@@ -5,6 +5,10 @@ updates:
     schedule:
       interval: 'weekly'
     target-branch: 'dev'
+    ignore:
+      # ignore all patch updates
+      - dependency-name: '*'
+        update-types: ['version-update:semver-patch']
 
   - package-ecosystem: 'cargo'
     directory: '/src-tauri'
@@ -12,8 +16,7 @@ updates:
       interval: 'weekly'
     target-branch: 'dev'
     ignore:
-      # Ignore updates to packages that start with 'aws'
-      # Wildcards match zero or more arbitrary characters
       - dependency-name: 'llm'
-      # Ignore some updates to the 'express' package
       - dependency-name: 'llm-chain'
+      - dependency-name: '*'
+        update-types: ['version-update:semver-patch']
