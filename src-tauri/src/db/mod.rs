@@ -36,6 +36,8 @@ pub fn get_latest_adjacency_pairs(
     //     println!("{}: ", idx);
     //     print_kv(&kv.0, &kv.1);
     // }
+
+    // select the latest 2 pairs then collect them in a reversed order
     let mut pairs = VecDeque::new();
     tree.iter()
         .rev()
@@ -81,15 +83,30 @@ pub fn insert_adjacency_pair(
     Ok(())
 }
 
-// pub fn print_all_messages(db: &sled::Db) {
-//     for kv in db.iter() {
-//         let kv = kv.unwrap();
-//         let k_str = std::str::from_utf8(&kv.0).unwrap();
-//         let v_str = std::str::from_utf8(&kv.1).unwrap();
-//         let str = (k_str, v_str);
-//         println!("{:?}", str);
-//     }
-// }
+pub fn get_history(
+    tree: &sled::Tree,
+) -> Result<Vec<(u8, String)>, AppError> {
+    let history = tree
+        .iter()
+        .map(|kv| {
+            let kv = kv.unwrap();
+            let k_str = match std::str::from_utf8(&kv.0)
+                .unwrap()
+                .ends_with('0')
+            {
+                true => 0,
+                false => 1,
+            };
+            let v_str = std::str::from_utf8(&kv.1)
+                .unwrap()
+                .to_owned();
+
+            (k_str, v_str)
+        })
+        .collect::<Vec<(u8, String)>>();
+
+    Ok(history)
+}
 
 pub fn print_kv(k: &sled::IVec, v: &sled::IVec) {
     let k_str = std::str::from_utf8(k).unwrap();

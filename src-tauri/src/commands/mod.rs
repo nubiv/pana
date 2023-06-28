@@ -1,4 +1,5 @@
 use crate::app_event;
+use crate::db::{get_history, setup_tree};
 use crate::services::downloader::download;
 use crate::services::llm::set_model;
 use crate::utils::events::*;
@@ -177,8 +178,8 @@ pub fn start_inference(
     //     crate::db::print_kv(&kv.0, &kv.1);
     // }
 
-    let tree = crate::db::setup_tree(&db)
-        .map_err(|e| e.to_string())?;
+    let tree =
+        setup_tree(&db).map_err(|e| e.to_string())?;
 
     // for kv in tree.iter() {
     //     let kv = kv.unwrap();
@@ -223,6 +224,27 @@ pub fn stop_inference(
     // if let Some(handle) = abort_handle_guard.take() {
     //     handle.abort();
     // }
+    Ok(())
+}
+
+#[tauri::command]
+pub fn sync_history(
+    db_state: tauri::State<crate::DBState>,
+    window: tauri::Window,
+) -> Result<(), String> {
+    let db = db_state.db.clone();
+    let tree =
+        setup_tree(&db).map_err(|e| e.to_string())?;
+
+    let history =
+        get_history(&tree).map_err(|e| e.to_string())?;
+
+    app_event!(
+        &window,
+        History,
+        HistoryPayload { history }
+    );
+
     Ok(())
 }
 
