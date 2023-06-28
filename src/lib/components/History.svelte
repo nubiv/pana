@@ -20,8 +20,8 @@ async function stopGenerating() {
 </script>
 
 <Card
-  class="relative w-[80%] mx-auto my-2 mt-14 h-[80%] overflow-auto no-scrollbar">
-  <CardContent class="my-4">
+  class="relative w-[80%] mx-auto my-2 mt-14 overflow-auto no-scrollbar">
+  <CardContent class="my-4 h-[80vh]">
     {#each $HistoryState as message, idx (idx)}
       {#if message.role == 'Me'}
         <div class=" flex w-[60%] items-center space-x-4 mb-3 float-right">
