@@ -1,5 +1,5 @@
 use crate::app_event;
-use crate::db::{get_history, setup_tree};
+use crate::db::{clear_tree, get_history, setup_tree};
 use crate::services::downloader::download;
 use crate::services::llm::set_model;
 use crate::utils::events::*;
@@ -249,31 +249,58 @@ pub fn sync_history(
 }
 
 #[tauri::command]
+pub fn clear_history(
+    db_state: tauri::State<crate::DBState>,
+    window: tauri::Window,
+) -> Result<(), String> {
+    let db = db_state.db.clone();
+    let tree =
+        setup_tree(&db).map_err(|e| e.to_string())?;
+
+    clear_tree(&tree).map_err(|e| e.to_string())?;
+
+    app_event!(
+        &window,
+        Noticification,
+        NoticificationPayload {
+            message: String::from("History cleared.")
+        }
+    );
+
+    Ok(())
+}
+
+#[tauri::command]
 pub fn open_model_folder(
-    path: String,
+    app_handle: tauri::AppHandle,
+    window: tauri::Window,
 ) -> Result<(), String> {
     use std::process::Command;
+
+    let models_path = get_models_path(&app_handle, &window)
+        .map_err(|e| e.to_string())?;
+    let path_str = models_path.to_str().unwrap();
 
     #[cfg(target_os = "windows")]
     {
         Command::new("explorer")
-            .args(["/select,", &path]) // The comma after select is not a typo
+            .args(["/select,", path_str]) // The comma after select is not a typo
             .spawn()
             .map_err(|e| e.to_string())?;
     }
 
     #[cfg(target_os = "linux")]
     {
-        if path.contains(",") {
+        if path_str.contains(',') {
             // see https://gitlab.freedesktop.org/dbus/dbus/-/issues/76
-            let new_path = match std::fs::metadata(&path)
+            let new_path = match std::fs::metadata(path_str)
                 .unwrap()
                 .is_dir()
             {
-                true => path,
+                true => path_str.to_owned(),
                 false => {
                     let mut path2 =
-                        std::path::PathBuf::from(path);
+                        std::path::PathBuf::from(path_str);
                     path2.pop();
                     path2
                         .into_os_string()
@@ -293,7 +320,7 @@ pub fn open_model_folder(
                     "--type=method_call",
                     "/org/freedesktop/FileManager1",
                     "org.freedesktop.FileManager1.ShowItems",
-                    format!("array:string:\"file://{path}\"").as_str(),
+                    format!("array:string:\"file://{path_str}\"").as_str(),
                     "string:\"\"",
                 ])
                 .spawn()
@@ -304,7 +331,7 @@ pub fn open_model_folder(
     #[cfg(target_os = "macos")]
     {
         Command::new("open")
-            .args(["-R", &path])
+            .args(["-R", path_str])
             .spawn()
             .map_err(|e| e.to_string())?;
     }

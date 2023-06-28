@@ -84,7 +84,7 @@ pub fn new_session(
          {user_name}: {message}\n\
          {character_name}: "
     );
-    println!("prompt: {:?}", prompt);
+    // println!("prompt: {:?}", prompt);
 
     let mut session =
         model.start_session(Default::default());
