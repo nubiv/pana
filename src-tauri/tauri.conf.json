@@ -14,7 +14,7 @@
     "allowlist": {
       "all": false,
       "path": {
-        "all": true
+        "all": false
       },
       "dialog": {
         "all": false,

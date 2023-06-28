@@ -28,6 +28,14 @@ pub fn setup_tree(
     Ok(tree)
 }
 
+pub fn clear_tree(
+    tree: &sled::Tree,
+) -> Result<(), AppError> {
+    tree.clear()?;
+
+    Ok(())
+}
+
 pub fn get_latest_adjacency_pairs(
     tree: &sled::Tree,
 ) -> Result<VecDeque<(String, String)>, AppError> {
