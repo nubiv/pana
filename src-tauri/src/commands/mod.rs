@@ -2,14 +2,17 @@ use crate::app_event;
 use crate::services::downloader::download;
 use crate::services::llm::set_model;
 use crate::utils::events::*;
-use crate::utils::models::{get_model_info, read_model_list};
+use crate::utils::models::{
+    get_model_info, read_model_list,
+};
 
 #[tauri::command]
 pub fn update_llm_models(
     app_handle: tauri::AppHandle,
     window: tauri::Window,
 ) -> Result<(), String> {
-    read_model_list(&app_handle, &window).map_err(|e| e.to_string())?;
+    read_model_list(&app_handle, &window)
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -26,46 +29,65 @@ pub fn download_model(
     let config_dir_path = app_handle
         .path_resolver()
         .resolve_resource("./models")
-        .ok_or(String::from("Failed to resolve resource path."))?;
+        .ok_or(String::from(
+            "Failed to resolve resource path.",
+        ))?;
 
-    let config_file_path = config_dir_path.join("models.json");
-    let model_config = std::fs::File::open(config_file_path)
-        .map_err(|e| format!("Failed to read configs: {}", e))?;
-    let model_list: ModelList = serde_json::from_reader(model_config)
-        .map_err(|e| format!("Failed to read configs: {}", e))?;
+    let config_file_path =
+        config_dir_path.join("models.json");
+    let model_config =
+        std::fs::File::open(config_file_path).map_err(
+            |e| format!("Failed to read configs: {}", e),
+        )?;
+    let model_list: ModelList =
+        serde_json::from_reader(model_config).map_err(
+            |e| format!("Failed to read configs: {}", e),
+        )?;
 
     let bin_dir_path = config_dir_path.join("bin");
 
-    let download_handle = tauri::async_runtime::spawn(async move {
-        let target_model = match model_list
-            .models
-            .iter()
-            .find(|model| model.name == model_name)
-        {
-            Some(model) => model,
-            None => {
+    let download_handle =
+        tauri::async_runtime::spawn(async move {
+            let target_model = match model_list
+                .models
+                .iter()
+                .find(|model| model.name == model_name)
+            {
+                Some(model) => model,
+                None => {
+                    app_event!(
+                        &window,
+                        Error,
+                        ErrorPayload {
+                            message: String::from(
+                                "Model not found."
+                            )
+                        }
+                    );
+
+                    return;
+                }
+            };
+
+            if let Err(e) = download(
+                &window,
+                &bin_dir_path,
+                target_model,
+            )
+            .await
+            {
                 app_event!(
                     &window,
                     Error,
                     ErrorPayload {
-                        message: String::from("Model not found.")
+                        message: format!(
+                            "Failed to download model: {}",
+                            e
+                        )
                     }
                 );
-
-                return;
             }
-        };
-
-        if let Err(e) = download(&window, &bin_dir_path, target_model).await {
-            app_event!(
-                &window,
-                Error,
-                ErrorPayload {
-                    message: format!("Failed to download model: {}", e)
-                }
-            );
-        }
-    });
+        });
 
     let mut abort_handlers_guard =
         download_state.abort_handlers.lock().unwrap();
@@ -114,7 +136,8 @@ pub fn load_model(
     model_name: String,
 ) -> Result<(), String> {
     let model_info =
-        get_model_info(&app_handle, &model_name).map_err(|e| e.to_string())?;
+        get_model_info(&app_handle, &model_name)
+            .map_err(|e| e.to_string())?;
     set_model(&llm_state, &app_handle, &model_info)
         .map_err(|e| e.to_string())?;
 
@@ -152,15 +175,36 @@ pub fn unload_model(
 
 #[tauri::command]
 pub fn start_inference(
+    db_state: tauri::State<crate::DBState>,
     llm_state: tauri::State<crate::LLMState>,
     window: tauri::Window,
     message: String,
 ) -> Result<(), String> {
     let model = llm_state.model.clone();
     let abort_handle = llm_state.abort_handle.clone();
+    let db = db_state.db.clone();
+
+    // for kv in db.iter() {
+    //     let kv = kv.unwrap();
+    //     crate::db::print_kv(&kv.0, &kv.1);
+    // }
+
+    let tree = crate::db::setup_tree(&db)
+        .map_err(|e| e.to_string())?;
+
+    // for kv in tree.iter() {
+    //     let kv = kv.unwrap();
+    //     crate::db::print_kv(&kv.0, &kv.1);
+    // }
 
     let window = std::sync::Arc::new(window);
-    crate::services::llm::infer(window, message, model, abort_handle);
+    crate::services::llm::infer(
+        window,
+        message,
+        model,
+        abort_handle,
+        std::sync::Arc::new(tree),
+    );
 
     // let mut abort_handle_guard = llm_state
     //     .abort_handle
@@ -195,7 +239,9 @@ pub fn stop_inference(
 }
 
 #[tauri::command]
-pub fn open_model_folder(path: String) -> Result<(), String> {
+pub fn open_model_folder(
+    path: String,
+) -> Result<(), String> {
     use std::process::Command;
 
     #[cfg(target_os = "windows")]
@@ -210,12 +256,19 @@ pub fn open_model_folder(path: String) -> Result<(), String> {
     {
         if path.contains(",") {
             // see https://gitlab.freedesktop.org/dbus/dbus/-/issues/76
-            let new_path = match std::fs::metadata(&path).unwrap().is_dir() {
+            let new_path = match std::fs::metadata(&path)
+                .unwrap()
+                .is_dir()
+            {
                 true => path,
                 false => {
-                    let mut path2 = std::path::PathBuf::from(path);
+                    let mut path2 =
+                        std::path::PathBuf::from(path);
                     path2.pop();
-                    path2.into_os_string().into_string().unwrap()
+                    path2
+                        .into_os_string()
+                        .into_string()
+                        .unwrap()
                 }
             };
             Command::new("xdg-open")
