@@ -21,9 +21,10 @@ pub fn set_model(
     let bin_path = model_config_path.join("bin");
     let model_path = bin_path.join(&model_info.filename);
 
-    let architecture =
-        llm::ModelArchitecture::from_str(model_info.architecture.as_str())
-            .map_err(InitingError::UnsupportedArch)?;
+    let architecture = llm::ModelArchitecture::from_str(
+        model_info.architecture.as_str(),
+    )
+    .map_err(InitingError::UnsupportedArch)?;
     let params = llm::ModelParameters {
         ..Default::default()
     };
@@ -36,10 +37,12 @@ pub fn set_model(
     )
     .map_err(InitingError::LoadError)?;
 
-    let mut model_guard = llm_state
-        .model
-        .lock()
-        .map_err(|_| LLMError::Custom(anyhow!("Failed to setup model.")))?;
+    let mut model_guard =
+        llm_state.model.lock().map_err(|_| {
+            LLMError::Custom(anyhow!(
+                "Failed to setup model."
+            ))
+        })?;
     *model_guard = Some(model);
 
     Ok(())
@@ -48,25 +51,49 @@ pub fn set_model(
 pub fn new_session(
     model: &dyn llm::Model,
     message: &str,
+    tree: &sled::Tree,
 ) -> Result<llm::InferenceSession, LLMError> {
-    let character_name = "### Assistant";
+    let character_name = "### Pana";
     let user_name = "### Human";
-    let persona = "A chat between a human and an assistant.";
-    // let history = format!(
-    //     "{character_name}: Hello - How may I help you today?\n\
-    //              {user_name}: What is the capital of France?\n\
-    //              {character_name}:  Paris is the capital of France."
-    // );
-    let new_message =
-        format!("\n{}: {}\n{}:", user_name, message, character_name);
+    let persona =
+        "A chat between a human and an assistant called Pana.";
 
-    let mut session = model.start_session(Default::default());
+    let latest_adjacency_pairs =
+        crate::db::get_latest_adjacency_pairs(tree)
+            .unwrap();
+    let history = latest_adjacency_pairs
+        .iter()
+        .map(|(k, v)| {
+            format!(
+                "{}: {}\n\
+        ",
+                k, v
+            )
+        })
+        .collect::<String>();
+
+    // let prompt = format!(
+    //     "{persona}\n\
+    //      {user_name}: {message}\n\
+    //      {character_name}:",
+    // );
+
+    let prompt = format!(
+        "{persona}\n\
+         {history}\
+         {user_name}: {message}\n\
+         {character_name}: "
+    );
+    println!("prompt: {:?}", prompt);
+
+    let mut session =
+        model.start_session(Default::default());
 
     session
         .feed_prompt::<std::convert::Infallible, llm::Prompt>(
             model,
             &llm::InferenceParameters::default(),
-            llm::Prompt::Text(format!("{}\n{}", persona, new_message).as_str()),
+            llm::Prompt::Text(&prompt),
             &mut Default::default(),
             |_| Ok(llm::InferenceFeedback::Continue),
         )
@@ -80,8 +107,10 @@ pub fn infer(
     message: String,
     model: Arc<Mutex<Option<Box<dyn llm::Model>>>>,
     abort_handle: Arc<AtomicBool>,
+    tree: Arc<sled::Tree>,
 ) {
     tauri::async_runtime::spawn_blocking(move || {
+        let user_message_time = chrono::Local::now();
         let model_guard = match model.lock() {
             Ok(model_guard) => model_guard,
             Err(_) => {
@@ -89,7 +118,9 @@ pub fn infer(
                     &window,
                     Error,
                     ErrorPayload {
-                        message: String::from("Failed to read model.")
+                        message: String::from(
+                            "Failed to read model."
+                        )
                     }
                 );
 
@@ -103,14 +134,18 @@ pub fn infer(
                     &window,
                     Error,
                     ErrorPayload {
-                        message: String::from("Model not loaded.")
+                        message: String::from(
+                            "Model not loaded."
+                        )
                     }
                 );
 
                 return;
             }
         };
-        let parameters = llm::InferenceParameters::default();
+
+        let parameters =
+            llm::InferenceParameters::default();
         let mut rng = rand::thread_rng();
 
         let mut stats = llm::InferenceStats::default();
@@ -127,7 +162,11 @@ pub fn infer(
         );
 
         let mut session =
-            match crate::services::llm::new_session(model.as_ref(), &message) {
+            match crate::services::llm::new_session(
+                model.as_ref(),
+                &message,
+                &tree,
+            ) {
                 Ok(session) => session,
                 Err(e) => {
                     app_event!(
@@ -165,7 +204,8 @@ pub fn infer(
             }
         );
 
-        stats.feed_prompt_duration = start_at.elapsed().unwrap();
+        stats.feed_prompt_duration =
+            start_at.elapsed().unwrap();
         stats.prompt_tokens = session.n_past;
 
         let max_token_count = usize::MAX;
@@ -173,7 +213,9 @@ pub fn infer(
         let mut response = String::from("");
         let mut utf8_buf = llm::TokenUtf8Buffer::new();
         while tokens_processed < max_token_count {
-            if abort_handle.load(std::sync::atomic::Ordering::Relaxed) {
+            if abort_handle
+                .load(std::sync::atomic::Ordering::Relaxed)
+            {
                 break;
             }
 
@@ -184,9 +226,14 @@ pub fn infer(
                 &mut rng,
             ) {
                 Ok(token) => token,
-                Err(llm::InferenceError::EndOfText) => break,
+                Err(llm::InferenceError::EndOfText) => {
+                    break
+                }
                 Err(e) => {
-                    println!("Failed to infer next token: {}", e);
+                    println!(
+                        "Failed to infer next token: {}",
+                        e
+                    );
                     break;
                 }
             };
@@ -206,16 +253,63 @@ pub fn infer(
 
             tokens_processed += 1;
         }
-        stats.predict_duration = start_at.elapsed().unwrap();
+        stats.predict_duration =
+            start_at.elapsed().unwrap();
         stats.predict_tokens = session.n_past;
 
+        let window_clone = window.clone();
         tauri::async_runtime::spawn(async move {
-            println!("start_at: {:?}", start_at);
-            println!("Response: {}", response);
-            println!("Stats: {:?}", stats);
+            // create id based on local time, format - %H:%M:%S
+            // so messages will be automatically ordered by time
+
+            // this atomic u64 id only increments and persists
+            // only use it for ordering the messages in the timeline
+            // let batch_id = db.generate_id().unwrap();
+            // let user_format =
+            //     format!("{}-0-%Y-%m-%d %H:%M:%S", batch_id);
+            // let pana_format =
+            //     format!("{}-1-%Y-%m-%d %H:%M:%S", batch_id);
+
+            let user_formatted_time = user_message_time
+                .format("%H:%M:%S-0")
+                .to_string();
+            let pana_message_time = chrono::Local::now();
+            let pana_formatted_time = pana_message_time
+                .format("%H:%M:%S-1")
+                .to_string();
+            let user_message = &message;
+            let pana_message = &response;
+
+            if let Err(e) = crate::db::insert_adjacency_pair(
+                &user_formatted_time,
+                user_message,
+                &pana_formatted_time,
+                pana_message,
+                &tree,
+            ) {
+                app_event!(
+                    &window_clone,
+                    Error,
+                    ErrorPayload {
+                        message: format!(
+                            "Failed to save chat messages: {}",
+                            e
+                        )
+                    }
+                );
+            }
+
+            // if let Some(first) = tree.first().unwrap() {
+            //     crate::db::print_kv(&first.0, &first.1);
+            // };
+
+            // println!("Inference Stats: {:?}", stats);
         });
 
-        abort_handle.store(false, std::sync::atomic::Ordering::Relaxed);
+        abort_handle.store(
+            false,
+            std::sync::atomic::Ordering::Relaxed,
+        );
 
         app_event!(
             &window,

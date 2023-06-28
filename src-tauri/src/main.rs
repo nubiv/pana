@@ -6,6 +6,7 @@ use std::sync::{Arc, Mutex};
 use tauri::{generate_handler, Manager};
 
 mod commands;
+mod db;
 mod services;
 mod utils;
 use commands::{
@@ -16,13 +17,18 @@ use commands::{
 
 #[derive(Default)]
 pub struct LLMState {
-    pub model: Arc<Mutex<Option<Box<dyn llm::Model>>>>,
-    pub abort_handle: Arc<AtomicBool>,
+    model: Arc<Mutex<Option<Box<dyn llm::Model>>>>,
+    abort_handle: Arc<AtomicBool>,
 }
 
 #[derive(Default)]
 pub struct DownloadState {
     abort_handlers: Mutex<Option<tauri::async_runtime::JoinHandle<()>>>,
+}
+
+pub struct DBState {
+    db: Arc<sled::Db>,
+    tree: Arc<Mutex<Option<sled::Tree>>>
 }
 
 fn main() {
@@ -40,6 +46,8 @@ fn main() {
         ])
         .setup(|app| {
             let window = app.get_window("main").unwrap();
+            let app_handle = app.handle();
+            let db = crate::db::init_db(&app_handle).expect("Failed to init db");
 
             #[cfg(target_os = "macos")]
             window_vibrancy::apply_vibrancy(&window, window_vibrancy::NSVisualEffectMaterial::HudWindow, None, None)
@@ -49,9 +57,16 @@ fn main() {
             // #[cfg(target_os = "windows")]
             // window_vibrancy::apply_blur(&window, Some((18, 18, 18, 125)))
             //   .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
-
+            
             app.manage(LLMState::default() );
             app.manage(DownloadState::default());
+            // make db mutable
+            // lazy static path!!
+            // persist session to avoid unnecessarily long prompt loading time
+            app.manage(DBState {
+                db: Arc::new(db),
+                tree: Arc::new(Mutex::new(None))
+            });
 
             Ok(())
         })
