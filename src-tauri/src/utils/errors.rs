@@ -11,7 +11,9 @@ pub enum LLMError {
 #[derive(thiserror::Error, Debug)]
 pub enum InitingError {
     #[error("Unsupported architecture.")]
-    UnsupportedArch(#[from] llm::UnsupportedModelArchitecture),
+    UnsupportedArch(
+        #[from] llm::UnsupportedModelArchitecture,
+    ),
     #[error("Failed to load model.")]
     LoadError(#[from] llm::LoadError),
 }
@@ -40,6 +42,8 @@ pub enum AppError {
     IOError(#[from] IOError),
     #[error("LLMError {0}")]
     LLMError(#[from] LLMError),
+    #[error("DBError {0}")]
+    DBError(#[from] sled::Error),
     #[error(transparent)]
     Custom(#[from] anyhow::Error),
 }

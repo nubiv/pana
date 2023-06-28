@@ -50,14 +50,14 @@ async function stopGenerating() {
   </CardContent>
   {#if $StreamState.isStreaming}
     <Button
-      class="absolute w-[30%] mx-[33.33%] bottom-2 opacity-50 group animate-in animate-out"
+      class="sticky w-[30%] mx-[33.33%] bottom-2 opacity-50 group animate-in animate-out"
       on:click="{stopGenerating}">
       <XCircle class="mr-2 h-4 w-4 pointer-events-none" /> Stop generating...
     </Button>
   {/if}
   {#if $StreamState.isFeedingPrompt}
     <Button
-      class="absolute w-[30%] mx-[33.33%] bottom-2 opacity-50 group animate-in animate-out">
+      class="sticky w-[30%] mx-[33.33%] bottom-2 opacity-50 group animate-in animate-out">
       <Loader class="mr-2 h-4 w-4 pointer-events-none" /> Feeding prompt...
     </Button>
   {/if}

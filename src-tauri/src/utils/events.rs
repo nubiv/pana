@@ -1,5 +1,6 @@
 use serde::Serialize;
 
+// NOT DRY
 pub trait EventType<'a> {
     const NAME: &'a str;
     type Payload: EventPayload;
