@@ -63,7 +63,7 @@ To build the application from source, run `pnpm tauri build`, or `cargo tauri bu
 
 - [x] In-app model downloading
 - [ ] Local interaction with LLM models
-  - [ ] Contextual conversation with embedded chat history store
+  - [x] Contextual conversation with embedded chat history store
   - [ ] Customizable LLM model parameters
 - [ ] Lang-chain tool integration
   - [ ] Search functionality to quickly locate information within the document
@@ -73,7 +73,7 @@ To build the application from source, run `pnpm tauri build`, or `cargo tauri bu
 
 ## Contributing
 
-Contributions are always welcome! Please submit a pull request to `dev` branch and make sure it passes CI check if you'd like to contribute to this project.
+Contributions are always welcome! Please file an issue or submit a pull request to `dev` branch and make sure it passes CI check if you'd like to contribute to this project.
 
 ## License
 
