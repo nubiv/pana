@@ -13,6 +13,7 @@ let unlistenNoticification: UnlistenFn
 let unlistenResponse: UnlistenFn
 let unlistenError: UnlistenFn
 let unlistenDownload: UnlistenFn
+let unlistenHistory: UnlistenFn
 
 type TNotificationPayload = {
   message: string
@@ -36,6 +37,10 @@ type TModelPayload = {
   name: string
   size: number
   total_size: number
+}
+
+type THistoryPayload = {
+  history: Array<number|string>[]
 }
 
 onMount(async () => {
@@ -95,7 +100,13 @@ onMount(async () => {
     LLMState.updateModelList(payload)
   })
 
+  unlistenHistory = await listen('history', (event: Event<THistoryPayload>) => {
+    const payload = event.payload
+    HistoryState.syncHistory(payload.history)
+  })
+
   await invoke('update_llm_models').catch((e) => toasts.error(e))
+  await invoke('sync_history').catch((e) => toasts.error(e))
 })
 
 onDestroy(() => {
@@ -104,6 +115,7 @@ onDestroy(() => {
   unlistenError()
   unlistenNoticification()
   unlistenResponse()
+  unlistenHistory()
 })
 </script>
 

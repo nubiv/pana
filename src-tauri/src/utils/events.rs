@@ -35,6 +35,7 @@ event_type!(Error, "error", ErrorPayload);
 event_type!(Response, "response", ResponsePayload);
 event_type!(Model, "model", ModelPayload);
 event_type!(Download, "download", DownloadPayload);
+event_type!(History, "history", HistoryPayload);
 
 pub trait EventPayload {}
 
@@ -43,11 +44,13 @@ pub struct NoticificationPayload {
     pub message: String,
 }
 impl EventPayload for NoticificationPayload {}
+
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct ErrorPayload {
     pub message: String,
 }
 impl EventPayload for ErrorPayload {}
+
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct ResponsePayload {
     pub is_streaming: bool,
@@ -55,6 +58,7 @@ pub struct ResponsePayload {
     pub token: String,
 }
 impl EventPayload for ResponsePayload {}
+
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct ModelPayload {
     pub name: String,
@@ -62,11 +66,18 @@ pub struct ModelPayload {
     pub total_size: u64,
 }
 impl EventPayload for ModelPayload {}
+
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct DownloadPayload {
     pub size: u64,
 }
 impl EventPayload for DownloadPayload {}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct HistoryPayload {
+    pub history: Vec<(u8, String)>,
+}
+impl EventPayload for HistoryPayload {}
 
 pub struct AppEvent<'a, T>
 where
