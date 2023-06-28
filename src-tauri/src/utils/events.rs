@@ -1,35 +1,40 @@
 use serde::Serialize;
 
-// NOT DRY
 pub trait EventType<'a> {
     const NAME: &'a str;
-    type Payload: EventPayload;
+    type Payload: EventPayload + Serialize + Clone;
+
+    // fn new(payload: Self::Payload) -> Self;
+
+    // fn emit(
+    //     window: &tauri::Window,
+    //     payload: Self::Payload,
+    // ) {
+    //     window
+    //         .emit(Self::NAME, payload)
+    //         .expect("failed to emit event");
+    // }
 }
-pub struct Noticification;
-impl<'a> EventType<'a> for Noticification {
-    const NAME: &'a str = "notification";
-    type Payload = NoticificationPayload;
+
+macro_rules! event_type {
+    ($name:ident, $name_str:expr, $payload:ty) => {
+        pub struct $name;
+
+        impl<'a> EventType<'a> for $name {
+            const NAME: &'a str = $name_str;
+            type Payload = $payload;
+        }
+    };
 }
-pub struct Error;
-impl<'a> EventType<'a> for Error {
-    const NAME: &'a str = "error";
-    type Payload = ErrorPayload;
-}
-pub struct Response;
-impl<'a> EventType<'a> for Response {
-    const NAME: &'a str = "response";
-    type Payload = ResponsePayload;
-}
-pub struct Model;
-impl<'a> EventType<'a> for Model {
-    const NAME: &'a str = "model";
-    type Payload = ModelPayload;
-}
-pub struct Download;
-impl<'a> EventType<'a> for Download {
-    const NAME: &'a str = "download";
-    type Payload = DownloadPayload;
-}
+event_type!(
+    Noticification,
+    "notification",
+    NoticificationPayload
+);
+event_type!(Error, "error", ErrorPayload);
+event_type!(Response, "response", ResponsePayload);
+event_type!(Model, "model", ModelPayload);
+event_type!(Download, "download", DownloadPayload);
 
 pub trait EventPayload {}
 
@@ -95,7 +100,7 @@ where
 /// *Arguments*:
 /// - `$window`: the reference to the target window.
 /// - `$event`: the event type to emit. Available events are: `Notification`, `Error`, `Response`, `Model`, `Download`.
-/// - `$payload`: the payload to send with the event.
+/// - `$payload`: the corresponding payload to send with the event.
 #[macro_export]
 macro_rules! app_event {
     ($window:expr, $event:ty, $payload:expr) => {
