@@ -4,12 +4,11 @@ use crate::utils::errors::AppError;
 
 pub fn init_db(
     app_handle: &tauri::AppHandle,
+    window: &tauri::Window,
 ) -> Result<sled::Db, AppError> {
-    let db_path = app_handle
-        .path_resolver()
-        .app_data_dir()
-        .unwrap()
-        .join("db");
+    let db_path = crate::utils::paths::get_db_path(
+        app_handle, window,
+    )?;
 
     let db =
         sled::Config::default().path(db_path).open()?;
