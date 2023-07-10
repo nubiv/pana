@@ -17,7 +17,7 @@
     "version": "npx auto-changelog -p --starting-version v0.1.0 --ignore-commit-pattern '^(update|doc|chore|(?!.*:)).*'"
   },
   "devDependencies": {
-    "@sveltejs/adapter-static": "^1.0.0-next.50",
+    "@sveltejs/adapter-static": "^2.0.2",
     "@sveltejs/kit": "^1.22.1",
     "@sveltejs/vite-plugin-svelte": "^2.0.0",
     "@tauri-apps/api": "^1.4.0",
