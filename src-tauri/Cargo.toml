@@ -20,7 +20,7 @@ serde_json = "1.0"
 llm = { git = "https://github.com/rustformers/llm"}
 # llm-chain-llama = { git = "https://github.com/sobelio/llm-chain"}
 llm-chain = { git = "https://github.com/sobelio/llm-chain"}
-tokio = { version = "1.29", features = ["full"] }
+tokio = { version = "1.31", features = ["full"] }
 anyhow = '1.0'
 thiserror = '1.0'
 reqwest = {version = "0.11", features = ["stream"] }
