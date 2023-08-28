@@ -30,7 +30,7 @@
     "clsx": "^1.2.1",
     "eslint": "^8.44.0",
     "eslint-plugin-svelte": "^2.32.2",
-    "lucide-svelte": "^0.259.0",
+    "lucide-svelte": "^0.269.0",
     "postcss": "^8.4.24",
     "postcss-load-config": "^4.0.1",
     "prettier": "^2.8.8",
